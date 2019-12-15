@@ -1,5 +1,6 @@
 """This module contains the Flask App."""
 
+import time
 import json
 import os
 
@@ -29,7 +30,8 @@ def activity_to_dict(activity: swagger_client.models.summary_activity.SummaryAct
     return {
         "id": str(activity.id),
         "distance": activity.distance / 1000.,
-        # "start_date": activity.start_date,
+        # In milliseconds
+        "start_date": activity.start_date.timestamp() * 1000
         # "start_latlng": activity.start_latlng,
         # "end_latlng": activity.end_latlng
     }

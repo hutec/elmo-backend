@@ -4,7 +4,7 @@ import Html exposing (..)
 import Debug exposing (toString)
 import Http
 import Json.Decode exposing (Decoder, field, string, float, Error)
-
+import Time exposing (Posix)
 
 
 -- MAIN
@@ -34,7 +34,8 @@ type Model
 type alias Route =
     {
     id : String,
-    distance : Float
+    distance : Float,
+    date: Posix
     }
 
 
@@ -104,19 +105,34 @@ viewRoutes model =
 renderRouteList : List Route -> Html msg
 renderRouteList lst =
     ul []
-        (List.map (\l -> li [] [text (l.id ++ "-" ++ toString l.distance)]) lst)
+        (List.map (\l -> li [] [text (toUtcString l.date ++ " - " ++ toString (truncate l.distance) ++ "km")]) lst)
+
+toUtcString : Time.Posix -> String
+toUtcString time =
+  String.fromInt (Time.toDay Time.utc time)
+  ++ ". " ++
+  toString (Time.toMonth Time.utc time)
+  ++ " " ++
+  String.fromInt (Time.toYear Time.utc time)
 
 
 -- HTTP
 
--- How to decode lists
 
+decodeTime : Decoder Time.Posix
+decodeTime =
+    Json.Decode.int
+        |> Json.Decode.andThen
+            (\ms ->
+                Json.Decode.succeed <| Time.millisToPosix ms
+            )
 
 routeDecoder : Decoder Route
 routeDecoder =
-    Json.Decode.map2 Route
+    Json.Decode.map3 Route
         (field "id" string)
         (field "distance" float)
+        (field "start_date" decodeTime)
 
 routeListDecoder : Decoder (List Route)
 routeListDecoder =
