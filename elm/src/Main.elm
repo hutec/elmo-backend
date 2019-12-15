@@ -1,6 +1,7 @@
 module Main exposing (..)
 import Browser
 import Html exposing (..)
+import Html.Attributes exposing (href)
 import Debug exposing (toString)
 import Http
 import Json.Decode exposing (Decoder, field, string, float, Error)
@@ -105,7 +106,9 @@ viewRoutes model =
 renderRouteList : List Route -> Html msg
 renderRouteList lst =
     ul []
-        (List.map (\l -> li [] [text (toUtcString l.date ++ " - " ++ toString (truncate l.distance) ++ "km")]) lst)
+        (List.map (\l -> li [] [
+        a [href (routeToURL l)] [text (toUtcString l.date ++ " - " ++ toString (truncate l.distance) ++ "km")]
+        ]) lst)
 
 toUtcString : Time.Posix -> String
 toUtcString time =
@@ -115,6 +118,9 @@ toUtcString time =
   ++ " " ++
   String.fromInt (Time.toYear Time.utc time)
 
+routeToURL : Route -> String
+routeToURL route =
+    "https://www.strava.com/activities/" ++ route.id
 
 -- HTTP
 
