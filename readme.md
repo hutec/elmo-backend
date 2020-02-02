@@ -6,6 +6,15 @@
 - `java -jar swagger-codegen-cli-2.4.12.jar generate -i https://developers.strava.com/swagger/swagger.json -l python -o generated`
 - `cd generated && python setup.py install --user`
 
+## Set Strava Secrets
+
+- Create a Strava App
+- Enter `STRAVA_CLIENT_ID` AND `STRAVA_CLIENT_SECRET`
+
+## Install elm and transpile Elm App
+
+- [Download and install elm](https://github.com/elm/compiler/blob/master/installers/linux/README.md)
+- in the `elm` folder run `elm make src/Main.elm -o elm.js`
 
 
 # Helpful Links
