@@ -2,10 +2,13 @@
 
 ## Install the Strava API via Swagger
 
-`java -jar swagger-codegen-cli.jar generate -i https://developers.strava.com/swagger/swagger.json -l python -o generated`
+- Download the Swagger Jar: `wget https://repo1.maven.org/maven2/io/swagger/swagger-codegen-cli/2.4.12/swagger-codegen-cli-2.4.12.jar`
+- `java -jar swagger-codegen-cli-2.4.12.jar generate -i https://developers.strava.com/swagger/swagger.json -l python -o generated`
+- `cd generated && python setup.py install --user`
 
-`cd generated && setup.py install --user`
 
+
+# Helpful Links
 
 [StackOverflow Discussion](https://stackoverflow.com/questions/55657275/swagger-client-in-python-trying-to-use-strava-api)
 
