@@ -14,7 +14,6 @@ import requests
 import secrets
 import swagger_client
 
-REDIRECT_URI = "http://localhost:5000/user_token_exchange"
 RESPONSE_TYPE = "code"
 SCOPE = "read_all,activity:read_all,activity:read,profile:read_all"
 
@@ -26,15 +25,35 @@ if os.path.isfile("strava_user.json"):
         app.config["STRAVA_USER"] = strava_user
 
 
-def activity_to_dict(activity: swagger_client.models.summary_activity.SummaryActivity) -> dict:
+def activity_to_dict(
+    activity: swagger_client.models.summary_activity.SummaryActivity,
+) -> dict:
     return {
         "id": str(activity.id),
-        "distance": activity.distance / 1000.,
+        "distance": activity.distance / 1000.0,
         # In milliseconds
         "start_date": activity.start_date.timestamp() * 1000
         # "start_latlng": activity.start_latlng,
         # "end_latlng": activity.end_latlng
     }
+
+
+@app.route("/refresh")
+def refresh_user():
+    refresh_token = strava_user["refresh_token"]
+    r = requests.post(
+        "https://www.strava.com/api/v3/oauth/token",
+        data={
+            "client_id": secrets.STRAVA_CLIENT_ID,
+            "client_secret": secrets.STRAVA_CLIENT_SECRET,
+            "refresh_token": refresh_token,
+            "grant_type": "refresh_token",
+        },
+    )
+    token_update = r.json()
+    del token_update["token_type"]
+    strava_user.update(token_update)
+    return f"Refreshed {strava_user['athlete']['firstname']}"
 
 
 @app.route("/routes")
@@ -53,7 +72,7 @@ def home():
 @app.route("/start")
 def start():
     """Starts the authentication process."""
-    url = f"https://www.strava.com/oauth/authorize?client_id={secrets.STRAVA_CLIENT_ID}&response_type=code&redirect_uri={REDIRECT_URI}&scope={SCOPE}"
+    url = f"https://www.strava.com/oauth/authorize?client_id={secrets.STRAVA_CLIENT_ID}&response_type=code&redirect_uri={secrets.REDIRECT_URI}&scope={SCOPE}"
     return redirect(url)
 
 
