@@ -1,7 +1,7 @@
 module Main exposing (..)
 import Browser
 import Html exposing (..)
-import Html.Attributes exposing (href)
+import Html.Attributes exposing (href, class)
 import Debug exposing (toString)
 import Http
 import Json.Decode exposing (Decoder, field, string, float, Error)
@@ -83,10 +83,24 @@ subscriptions model =
 
 view : Model -> Html Msg
 view model =
-  div []
-    [ h2 [] [ text "Strava Routes" ]
-    , viewRoutes model
+  div [class "content"] [
+    div [class "header"] [
+      h1 [] [text "Strava"], 
+      nav [] [
+          ul [] [
+            li [] [a [href "https:/rbn.uber.space/strava/start"] [text "Start"]],
+            li [] [a [href "https:/rbn.uber.space/strava/refresh"] [text "Refresh"]]
+          ]
+      ]
+    ],
+
+    div [class "route-list"] [
+      nav [] [
+          h2 [] [ text "Routes" ]
+              , viewRoutes model
+      ]
     ]
+  ]
 
 
 viewRoutes : Model -> Html Msg
@@ -148,7 +162,7 @@ routeListDecoder =
 getRoutes : Cmd Msg
 getRoutes =
     Http.get
-        { url = "http://127.0.0.1:5000/routes"
+        { url = "https:/rbn.uber.space/strava/routes"
         , expect = Http.expectJson GotRoutes routeListDecoder
         }
 

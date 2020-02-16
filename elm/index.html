@@ -37,6 +37,11 @@
             align-items: center;
         }
 
+        .header li {
+            display: inline;
+            margin-right: 1em;
+        }
+
         .route-list {
             grid-area: "route-list";
         }
@@ -49,18 +54,7 @@
     <title>Elmo</title>
 </head>
 <body>
-    <div class="content">
-        <div class="header">
-            <h1>Strava</h1>
-            <nav>
-                <menu>
-                    <menuitem><a href="/refresh">Refresh</a></menuitem>
-                    <menuitem><a href="/start">Start</a></menuitem>
-                </menu>
-            </nav>
-        </div>
-        <div id="elm-app"></div>
-    </div>
+    <div id="elm-app"></div>
     <script src="elm.js"></script>
     <script>
         var app = Elm.Main.init({
