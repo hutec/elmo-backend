@@ -5,21 +5,62 @@
     <style type="text/css">
         body{
             margin:40px auto;
-            max-width:650px;
+            max-width: 100%;
             line-height:1.6;
             font-size:18px;
             color:#444;
-            padding:0 10px
+            padding:0 10px;
+            margin: 1em;
+            font-family: "Roboto", sans-serif;
+        }
+
+        body a {
+            color:#444;
+            text-decoration: none;
         }
 
         h1,h2,h3{
             line-height:1.2
         }
+
+        .content {
+            display: grid;
+            grid-template-columns: 1fr 2fr;
+            grid-template-rows: 3rem 80vh;
+            grid-template-areas: "header header" "route-list route-detail";
+        }    
+
+        .header {
+            grid-area: header;
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+        }
+
+        .route-list {
+            grid-area: "route-list";
+        }
+
+        .route-detail {
+            grid-area: "route-detail";
+        }
+
     </style>
     <title>Elmo</title>
 </head>
 <body>
-    <div id="elm-app"></div>
+    <div class="content">
+        <div class="header">
+            <h1>Strava</h1>
+            <nav>
+                <menu>
+                    <menuitem><a href="/refresh">Refresh</a></menuitem>
+                    <menuitem><a href="/start">Start</a></menuitem>
+                </menu>
+            </nav>
+        </div>
+        <div id="elm-app"></div>
+    </div>
     <script src="elm.js"></script>
     <script>
         var app = Elm.Main.init({
@@ -28,3 +69,4 @@
     </script>
 </body>
 </html>
+
