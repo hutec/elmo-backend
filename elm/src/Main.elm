@@ -88,8 +88,8 @@ view model =
       h1 [] [text "Strava"], 
       nav [] [
           ul [] [
-            li [] [a [href "https:/rbn.uber.space/strava/start"] [text "Start"]],
-            li [] [a [href "https:/rbn.uber.space/strava/refresh"] [text "Refresh"]]
+            li [] [a [href "https://rbn.uber.space/strava/start"] [text "Start"]],
+            li [] [a [href "https://rbn.uber.space/strava/refresh"] [text "Refresh"]]
           ]
       ]
     ],
@@ -162,7 +162,7 @@ routeListDecoder =
 getRoutes : Cmd Msg
 getRoutes =
     Http.get
-        { url = "https:/rbn.uber.space/strava/routes"
+        { url = "https://rbn.uber.space/strava/routes"
         , expect = Http.expectJson GotRoutes routeListDecoder
         }
 
