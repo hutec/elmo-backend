@@ -1,3 +1,8 @@
+# Elmo
+
+This is playground for me learning [elm](https://elm-lang.org/), web developement, and data visualization.
+Data is consumed from the [Strava](https://www.strava.com/) API.
+
 # Installation
 
 ## Install the Strava API via Swagger
