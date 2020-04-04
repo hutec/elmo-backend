@@ -1,7 +1,8 @@
 module Main exposing (..)
 import Browser
 import Html exposing (..)
-import Html.Attributes exposing (href, class)
+import Html.Attributes exposing (href, class, placeholder)
+import Html.Events exposing (onInput)
 import Debug exposing (toString)
 import Http
 import Json.Decode exposing (Decoder, field, string, float, Error)
@@ -9,7 +10,6 @@ import Time exposing (Posix)
 
 
 -- MAIN
-
 
 main =
   Browser.element
@@ -23,15 +23,18 @@ main =
 
 -- MODEL
 
+type alias RouteFilter = Maybe Float
 
--- Model type with possible states
-type Model
+type StravaAPI
   = Failure Http.Error
   | Loading
   | Success (List Route)
+  
+type alias Model = 
+  { status : StravaAPI
+  , filter : RouteFilter
+  }
 
-
--- Route Class
 type alias Route =
     {
     id : String,
@@ -42,40 +45,40 @@ type alias Route =
 
 init : () -> (Model, Cmd Msg)
 init _ =
-  (Loading, getRoutes)
+  (Model Loading Nothing, getRoutes)
 
 
 -- UPDATE
 
-
 type Msg
   = MorePlease
   | GotRoutes (Result Http.Error (List Route))
+  | UpdateFilter String
 
 
 update : Msg -> Model -> (Model, Cmd Msg)
 update msg model =
   case msg of
     MorePlease ->
-      (Loading, getRoutes)
+      ({model | status =  Loading}, getRoutes)
 
     GotRoutes result ->
       case result of
         Ok routes ->
-          (Success routes, Cmd.none)
+          ({model | status = Success routes}, Cmd.none)
 
         Err errmsg ->
-          (Failure errmsg, Cmd.none)
+          ({model | status = Failure errmsg}, Cmd.none)
 
+    UpdateFilter newFilter ->
+      ({model | filter = String.toFloat newFilter}, Cmd.none)
 
 
 -- SUBSCRIPTIONS
 
-
 subscriptions : Model -> Sub Msg
 subscriptions model =
   Sub.none
-
 
 
 -- VIEW
@@ -85,7 +88,7 @@ view : Model -> Html Msg
 view model =
   div [class "content"] [
     div [class "header"] [
-      h1 [] [text "Strava"], 
+      h1 [] [text "Strava"],
       nav [] [
           ul [] [
             li [] [a [href "https://rbn.uber.space/strava/start"] [text "Start"]],
@@ -95,6 +98,7 @@ view model =
     ],
 
     div [class "route-list"] [
+      input [ placeholder "Min Kilometers", onInput UpdateFilter] [],
       nav [] [
           h2 [] [ text "Routes" ]
               , viewRoutes model
@@ -105,7 +109,7 @@ view model =
 
 viewRoutes : Model -> Html Msg
 viewRoutes model =
-    case model of
+    case model.status of
         Failure error ->
             text (toString error)
 
@@ -113,9 +117,16 @@ viewRoutes model =
             text "Loading..."
 
         Success routeList ->
-            renderRouteList routeList
+            renderRouteList (List.filter (isBigRoute model.filter) routeList)
 
-
+isBigRoute : RouteFilter -> Route -> Bool
+isBigRoute filter route = 
+  case filter of 
+    Nothing ->
+      True
+    
+    Just distance ->
+      route.distance > distance
 
 renderRouteList : List Route -> Html msg
 renderRouteList lst =
