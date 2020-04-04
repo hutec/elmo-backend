@@ -6,8 +6,8 @@ import Html exposing (..)
 import Html.Attributes exposing (class, href, placeholder)
 import Html.Events exposing (onInput)
 import Http
-import Json.Decode exposing (Decoder, Error, field, float, string)
-import Time exposing (Posix)
+import Route exposing (Route, RouteFilter, filterRoute, routeListDecoder, routeToURL)
+import Time
 
 
 
@@ -27,10 +27,6 @@ main =
 -- MODEL
 
 
-type alias RouteFilter =
-    Maybe Float
-
-
 type StravaAPI
     = Failure Http.Error
     | Loading
@@ -40,13 +36,6 @@ type StravaAPI
 type alias Model =
     { status : StravaAPI
     , filter : RouteFilter
-    }
-
-
-type alias Route =
-    { id : String
-    , distance : Float
-    , date : Posix
     }
 
 
@@ -128,17 +117,7 @@ viewRoutes model =
             text "Loading..."
 
         Success routeList ->
-            renderRouteList (List.filter (isBigRoute model.filter) routeList)
-
-
-isBigRoute : RouteFilter -> Route -> Bool
-isBigRoute filter route =
-    case filter of
-        Nothing ->
-            True
-
-        Just distance ->
-            route.distance > distance
+            renderRouteList (List.filter (filterRoute model.filter) routeList)
 
 
 renderRouteList : List Route -> Html msg
@@ -172,35 +151,8 @@ padDay day =
         day
 
 
-routeToURL : Route -> String
-routeToURL route =
-    "https://www.strava.com/activities/" ++ route.id
-
-
 
 -- HTTP
-
-
-decodeTime : Decoder Time.Posix
-decodeTime =
-    Json.Decode.int
-        |> Json.Decode.andThen
-            (\ms ->
-                Json.Decode.succeed <| Time.millisToPosix ms
-            )
-
-
-routeDecoder : Decoder Route
-routeDecoder =
-    Json.Decode.map3 Route
-        (field "id" string)
-        (field "distance" float)
-        (field "start_date" decodeTime)
-
-
-routeListDecoder : Decoder (List Route)
-routeListDecoder =
-    Json.Decode.list routeDecoder
 
 
 getRoutes : Cmd Msg
