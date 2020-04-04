@@ -156,11 +156,20 @@ renderRouteList lst =
 
 toUtcString : Time.Posix -> String
 toUtcString time =
-    String.fromInt (Time.toDay Time.utc time)
+    padDay (String.fromInt (Time.toDay Time.utc time))
         ++ ". "
         ++ toString (Time.toMonth Time.utc time)
         ++ " "
         ++ String.fromInt (Time.toYear Time.utc time)
+
+
+padDay : String -> String
+padDay day =
+    if String.length day == 1 then
+        "0" ++ day
+
+    else
+        day
 
 
 routeToURL : Route -> String
