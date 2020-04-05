@@ -2,6 +2,9 @@
 <html lang="en">
 <head>
     <meta charset="UTF-8">
+    <script src="https://cdn.jsdelivr.net/npm/vega@5.10.1"></script>
+    <script src="https://cdn.jsdelivr.net/npm/vega-lite@4.9.0"></script>
+    <script src="https://cdn.jsdelivr.net/npm/vega-embed@6.5.2"></script>
     <style type="text/css">
         body{
             margin:40px auto;
@@ -60,7 +63,26 @@
         var app = Elm.Main.init({
             node: document.getElementById("elm-app")
         });
-    </script>
+        app.ports.cache.subscribe(function(data) {
+            data = data.map(x => ({"Distance": x}));
+            var vlSpec = {
+                $schema: 'https://vega.github.io/schema/vega-lite/v4.json',
+                data: {
+                    values: data 
+                },
+                mark: 'point',
+                encoding: {   
+                    x: {
+                        field: "Distance",
+                        type: "quantitative"
+                    }
+                }
+            };
+            // Embed the visualization in the container with id `vis`
+            vegaEmbed('.route-detail', vlSpec);
+                
+            })
+        </script>
 </body>
 </html>
 

@@ -74,7 +74,22 @@ update msg model =
                     ( { model | status = Failure errmsg }, Cmd.none )
 
         UpdateFilter newFilter ->
-            ( { model | filter = String.toFloat newFilter }, Cmd.none )
+            -- Update filter model filter and update
+            let
+                new_model =
+                    { model | filter = String.toFloat newFilter }
+            in
+            ( new_model, cache (E.list E.float (List.map .distance (filteredRoutes new_model))) )
+
+
+filteredRoutes : Model -> List Route
+filteredRoutes model =
+    case model.routes of
+        Nothing ->
+            []
+
+        Just routes ->
+            List.filter (filterRoute model.filter) routes
 
 
 
@@ -109,6 +124,7 @@ view model =
                 , viewRoutes model
                 ]
             ]
+        , div [ class "route-detail" ] []
         ]
 
 
