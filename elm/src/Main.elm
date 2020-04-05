@@ -6,13 +6,14 @@ import Html exposing (..)
 import Html.Attributes exposing (class, href, placeholder)
 import Html.Events exposing (onInput)
 import Http
+import Json.Encode as E
 import Route exposing (Route, RouteFilter, filterRoute, routeListDecoder, routeToURL)
 import Time
-import Json.Encode as E
 
 
 
 -- MAIN
+
 
 main =
     Browser.element
@@ -22,7 +23,9 @@ main =
         , view = view
         }
 
+
 port cache : E.Value -> Cmd msg
+
 
 
 -- MODEL
@@ -31,18 +34,19 @@ port cache : E.Value -> Cmd msg
 type StravaAPI
     = Failure Http.Error
     | Loading
-    | Success (List Route)
+    | Success
 
 
 type alias Model =
     { status : StravaAPI
+    , routes : Maybe (List Route)
     , filter : RouteFilter
     }
 
 
 init : () -> ( Model, Cmd Msg )
 init _ =
-    ( Model Loading Nothing, getRoutes )
+    ( Model Loading Nothing Nothing, getRoutes )
 
 
 
@@ -64,7 +68,7 @@ update msg model =
         GotRoutes result ->
             case result of
                 Ok routes ->
-                    ( { model | status = Success routes }, Cmd.none )
+                    ( { model | status = Success, routes = Just routes }, Cmd.none )
 
                 Err errmsg ->
                     ( { model | status = Failure errmsg }, Cmd.none )
@@ -101,15 +105,15 @@ view model =
         , div [ class "route-list" ]
             [ input [ placeholder "Min Kilometers", onInput UpdateFilter ] []
             , nav []
-                [ h2 [] [ text "Routes" ]
+                [ h2 [] [ viewStravaStatus model ]
                 , viewRoutes model
                 ]
             ]
         ]
 
 
-viewRoutes : Model -> Html Msg
-viewRoutes model =
+viewStravaStatus : Model -> Html Msg
+viewStravaStatus model =
     case model.status of
         Failure error ->
             text (toString error)
@@ -117,8 +121,18 @@ viewRoutes model =
         Loading ->
             text "Loading..."
 
-        Success routeList ->
-            renderRouteList (List.filter (filterRoute model.filter) routeList)
+        Success ->
+            text "Routes"
+
+
+viewRoutes : Model -> Html Msg
+viewRoutes model =
+    case model.routes of
+        Nothing ->
+            text "No Routes"
+
+        Just routes ->
+            renderRouteList (List.filter (filterRoute model.filter) routes)
 
 
 renderRouteList : List Route -> Html msg
