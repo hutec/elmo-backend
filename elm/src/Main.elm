@@ -1,4 +1,4 @@
-module Main exposing (..)
+port module Main exposing (..)
 
 import Browser
 import Debug exposing (toString)
@@ -8,11 +8,11 @@ import Html.Events exposing (onInput)
 import Http
 import Route exposing (Route, RouteFilter, filterRoute, routeListDecoder, routeToURL)
 import Time
+import Json.Encode as E
 
 
 
 -- MAIN
-
 
 main =
     Browser.element
@@ -22,6 +22,7 @@ main =
         , view = view
         }
 
+port cache : E.Value -> Cmd msg
 
 
 -- MODEL
