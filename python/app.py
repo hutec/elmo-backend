@@ -10,6 +10,7 @@ from flask import redirect
 from flask import jsonify
 from flask import json
 import requests
+import polyline
 
 import secrets
 import swagger_client
@@ -36,6 +37,7 @@ def activity_to_dict(
         "average_speed": activity.average_speed * 3.6,
         "moving_time": activity.moving_time,
         "elevation": activity.total_elevation_gain,
+        "route": polyline.codec.PolylineCodec().decode(activity.map.summary_polyline)
     }
 
 
