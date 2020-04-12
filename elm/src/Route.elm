@@ -8,6 +8,8 @@ type alias Route =
     { id : String
     , distance : Float
     , date : Posix
+    , speed : Float
+    , moving_time : Float
     }
 
 
@@ -32,14 +34,14 @@ filterRoute filter route =
 
 
 -- JSON
-
-
 routeDecoder : Decoder Route
 routeDecoder =
-    Json.Decode.map3 Route
+    Json.Decode.map5 Route
         (field "id" string)
         (field "distance" float)
         (field "start_date" decodeTime)
+        (field "average_speed" float)
+        (field "moving_time" float)
 
 
 routeListDecoder : Decoder (List Route)
