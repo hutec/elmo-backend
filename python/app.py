@@ -35,6 +35,7 @@ def activity_to_dict(
         "start_date": activity.start_date.timestamp() * 1000,
         "average_speed": activity.average_speed * 3.6,
         "moving_time": activity.moving_time,
+        "elevation": activity.total_elevation_gain,
     }
 
 
