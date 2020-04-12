@@ -53,6 +53,8 @@ def refresh_user():
     token_update = r.json()
     del token_update["token_type"]
     strava_user.update(token_update)
+    with open("strava_user.json", "w") as f:
+        json.dump(strava_user, f)
     return f"Refreshed {strava_user['athlete']['firstname']}"
 
 
