@@ -32,9 +32,9 @@ def activity_to_dict(
         "id": str(activity.id),
         "distance": activity.distance / 1000.0,
         # In milliseconds
-        "start_date": activity.start_date.timestamp() * 1000
-        # "start_latlng": activity.start_latlng,
-        # "end_latlng": activity.end_latlng
+        "start_date": activity.start_date.timestamp() * 1000,
+        "average_speed": activity.average_speed * 3.6,
+        "moving_time": activity.moving_time,
     }
 
 
