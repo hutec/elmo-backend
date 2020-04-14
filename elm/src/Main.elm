@@ -3,11 +3,11 @@ port module Main exposing (..)
 import Browser
 import Debug exposing (toString)
 import Html exposing (..)
-import Html.Attributes exposing (class, href, placeholder)
+import Html.Attributes exposing (class, href, id, placeholder, style)
 import Html.Events exposing (onInput)
 import Http
 import Json.Encode as E
-import Route exposing (Route, RouteFilter, filterRoute, routeListDecoder, routeToURL)
+import Route exposing (Route, RouteFilter, filterRoute, routeListDecoder, routeToURL, encodeRoutes)
 import Time
 
 
@@ -79,8 +79,7 @@ update msg model =
                 new_model =
                     { model | filter = String.toFloat newFilter }
             in
-            ( new_model, cache (E.list E.float (List.map .distance (filteredRoutes new_model))) )
-
+            ( new_model, cache (encodeRoutes (filteredRoutes new_model)) )
 
 filteredRoutes : Model -> List Route
 filteredRoutes model =
@@ -112,8 +111,8 @@ view model =
             [ h1 [] [ text "Strava" ]
             , nav []
                 [ ul []
-                    [ li [] [ a [ href "https://rbn.uber.space/strava/start" ] [ text "Start" ] ]
-                    , li [] [ a [ href "https://rbn.uber.space/strava/refresh" ] [ text "Refresh" ] ]
+                    [ li [] [ a [ href "http://localhost:5000/start" ] [ text "Start" ] ]
+                    , li [] [ a [ href "http://localhost:5000/refresh" ] [ text "Refresh" ] ]
                     ]
                 ]
             ]
@@ -124,7 +123,9 @@ view model =
                 , viewRoutes model
                 ]
             ]
-        , div [ class "route-detail" ] []
+        , div [ class "route-detail" ]
+            [ div [ id "mapid", style "height" "800px", style "width" "800px" ] []
+            ]
         ]
 
 
@@ -189,6 +190,6 @@ padDay day =
 getRoutes : Cmd Msg
 getRoutes =
     Http.get
-        { url = "https://rbn.uber.space/strava/routes"
+        { url = "http://localhost:5000/routes"
         , expect = Http.expectJson GotRoutes routeListDecoder
         }

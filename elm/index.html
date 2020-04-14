@@ -2,9 +2,14 @@
 <html lang="en">
 <head>
     <meta charset="UTF-8">
-    <script src="https://cdn.jsdelivr.net/npm/vega@5.10.1"></script>
-    <script src="https://cdn.jsdelivr.net/npm/vega-lite@4.9.0"></script>
-    <script src="https://cdn.jsdelivr.net/npm/vega-embed@6.5.2"></script>
+    <link rel="stylesheet" href="https://unpkg.com/leaflet@1.6.0/dist/leaflet.css"
+    integrity="sha512-xwE/Az9zrjBIphAcBb3F6JVqxf46+CDLwfLMHloNu6KEQCAWi6HcDUbeOfBIptF7tcCzusKFjFw2yuvEpDL9wQ=="
+    crossorigin=""/>
+    <!-- Make sure you put this AFTER Leaflet's CSS -->
+    <script src="https://unpkg.com/leaflet@1.6.0/dist/leaflet.js"
+    integrity="sha512-gZwIG9x3wUXg2hdXF6+rVkLF/0Vi9U8D2Ntg4Ga5I5BZpVkVxlJWbSQtXPSiUTtC0TjtGOmxa1AJPuV0CPthew=="
+    crossorigin=""></script>
+
     <style type="text/css">
         body{
             margin:40px auto;
@@ -63,26 +68,23 @@
         var app = Elm.Main.init({
             node: document.getElementById("elm-app")
         });
+       
+        var mymap = L.map('mapid').setView([48.77, 9.17], 13);
+
+        L.tileLayer('https://dev.{s}.tile.openstreetmap.fr/cyclosm/{z}/{x}/{y}.png', {
+            maxZoom: 20,
+            attribution: '<a href="https://github.com/cyclosm/cyclosm-cartocss-style/releases" title="CyclOSM - Open Bicycle render">CyclOSM</a> | Map data: &copy; <a href="https://www.openstreetmap.org/copyright">OpenStreetMap</a> contributors'
+        }).addTo(mymap);
+
         app.ports.cache.subscribe(function(data) {
-            data = data.map(x => ({"Distance": x}));
-            var vlSpec = {
-                $schema: 'https://vega.github.io/schema/vega-lite/v4.json',
-                data: {
-                    values: data 
-                },
-                mark: 'point',
-                encoding: {   
-                    x: {
-                        field: "Distance",
-                        type: "quantitative"
-                    }
-                }
-            };
-            // Embed the visualization in the container with id `vis`
-            vegaEmbed('.route-detail', vlSpec);
-                
-            })
-        </script>
+            for (var i = 0; i < data.length; i++) {
+                var polyline = L.polyline(data[i], {color: "red"}).addTo(mymap);
+                mymap.fitBounds(polyline.getBounds());
+            }
+        });
+    
+
+    </script>
 </body>
 </html>
 

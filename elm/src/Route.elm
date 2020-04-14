@@ -1,6 +1,7 @@
-module Route exposing (Route, RouteFilter, filterRoute, routeListDecoder, routeToURL)
+module Route exposing (Coordinate, Route, RouteFilter, filterRoute, routeListDecoder, routeToURL, encodeRoutes)
 
 import Json.Decode exposing (Decoder, field, float, index, string)
+import Json.Encode as E
 import Time exposing (Posix)
 
 
@@ -42,6 +43,18 @@ filterRoute filter route =
 
 
 -- JSON
+
+encodeRoutes : List Route -> E.Value
+encodeRoutes routes =
+    E.list encodeRoute routes 
+
+encodeRoute : Route -> E.Value
+encodeRoute route =
+    E.list encodeCoordinate route.route
+
+encodeCoordinate : Coordinate -> E.Value
+encodeCoordinate coord =
+    E.list E.float [coord.latitude, coord.longitude]
 
 
 routeDecoder : Decoder Route
