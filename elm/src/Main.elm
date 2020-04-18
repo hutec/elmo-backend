@@ -4,10 +4,10 @@ import Browser
 import Debug exposing (toString)
 import Html exposing (..)
 import Html.Attributes exposing (class, href, id, placeholder, style)
-import Html.Events exposing (onInput)
+import Html.Events exposing (onClick, onInput)
 import Http
 import Json.Encode as E
-import Route exposing (Route, RouteFilter, filterRoute, routeListDecoder, routeToURL, encodeRoutes)
+import Route exposing (Route, RouteFilter, encodeRoutes, filterRoute, routeListDecoder, routeToURL)
 import Time
 
 
@@ -57,6 +57,7 @@ type Msg
     = MorePlease
     | GotRoutes (Result Http.Error (List Route))
     | UpdateFilter String
+    | UpdateMap
 
 
 update : Msg -> Model -> ( Model, Cmd Msg )
@@ -79,7 +80,11 @@ update msg model =
                 new_model =
                     { model | filter = String.toFloat newFilter }
             in
-            ( new_model, cache (encodeRoutes (filteredRoutes new_model)) )
+            ( new_model, Cmd.none )
+
+        UpdateMap ->
+            ( model, cache (encodeRoutes (filteredRoutes model)) )
+
 
 filteredRoutes : Model -> List Route
 filteredRoutes model =
@@ -118,6 +123,7 @@ view model =
             ]
         , div [ class "route-list" ]
             [ input [ placeholder "Min Kilometers", onInput UpdateFilter ] []
+            , button [ onClick UpdateMap ] [ text "Update Map" ]
             , nav []
                 [ h2 [] [ viewStravaStatus model ]
                 , viewRoutes model
