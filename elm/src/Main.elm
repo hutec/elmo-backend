@@ -156,8 +156,8 @@ view model =
             [ h1 [] [ text "Strava" ]
             , nav []
                 [ ul []
-                    [ li [] [ a [ href "http://localhost:5000/start" ] [ text "Start" ] ]
-                    , li [] [ a [ href "http://localhost:5000/refresh" ] [ text "Refresh" ] ]
+                    [ li [] [ a [ href "https://rbn.uber.space/strava/start" ] [ text "Start" ] ]
+                    , li [] [ a [ href "https://rbn.uber.space/strava/refresh" ] [ text "Refresh" ] ]
                     ]
                 ]
             ]
@@ -170,7 +170,7 @@ view model =
                 ]
             ]
         , div [ class "route-detail" ]
-            [ div [ id "mapid", style "height" "800px", style "width" "800px" ] []
+            [ div [ id "mapid", style "height" "800px", style "width" "100%" ] []
             ]
         ]
 
@@ -248,6 +248,6 @@ padDay day =
 getRoutes : Cmd Msg
 getRoutes =
     Http.get
-        { url = "http://localhost:5000/routes"
+        { url = "https://rbn.uber.space/strava/routes"
         , expect = Http.expectJson GotRoutes routeListDecoder
         }
