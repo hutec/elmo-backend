@@ -85,7 +85,8 @@
 
             // Add new routes
             for (var i = 0; i < data.length; i++) {
-                var polyline = L.polyline(data[i], {color: "red"}).addTo(mymap);
+                randomColor = '#'+(0x1000000+(Math.random())*0xffffff).toString(16).substr(1,6);
+                var polyline = L.polyline(data[i], {color: randomColor, weight: 5}).addTo(mymap);
                 mymap.fitBounds(polyline.getBounds());
                 polylines.push(polyline);
             }
