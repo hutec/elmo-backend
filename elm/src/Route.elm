@@ -1,4 +1,4 @@
-module Route exposing (Coordinate, Route, RouteFilter, filterRoute, routeListDecoder, routeToURL, encodeRoutes)
+module Route exposing (Coordinate, Route, RouteFilter, encodeRoutes, filterRoute, routeListDecoder, routeToURL)
 
 import Json.Decode exposing (Decoder, field, float, index, string)
 import Json.Encode as E
@@ -23,7 +23,9 @@ type alias Route =
 
 
 type alias RouteFilter =
-    Maybe Float
+    { distance : ( Maybe Float, Maybe Float )
+    , speed : ( Maybe Float, Maybe Float )
+    }
 
 
 routeToURL : Route -> String
@@ -31,30 +33,50 @@ routeToURL route =
     "https://www.strava.com/activities/" ++ route.id
 
 
-filterRoute : RouteFilter -> Route -> Bool
-filterRoute filter route =
-    case filter of
+compareMaybe : Maybe comparable -> comparable -> (comparable -> comparable -> Bool) -> Bool
+compareMaybe a b comp =
+    case a of
         Nothing ->
             True
 
-        Just distance ->
-            route.distance > distance
+        Just x ->
+            comp x b
+
+
+isBetween : ( Maybe comparable, Maybe comparable ) -> comparable -> Bool
+isBetween range a =
+    let
+        lower =
+            Tuple.first range
+
+        upper =
+            Tuple.second range
+    in
+    compareMaybe lower a (<) && compareMaybe upper a (>)
+
+
+filterRoute : RouteFilter -> Route -> Bool
+filterRoute filter route =
+    isBetween filter.distance route.distance && isBetween filter.speed route.speed
 
 
 
 -- JSON
 
+
 encodeRoutes : List Route -> E.Value
 encodeRoutes routes =
-    E.list encodeRoute routes 
+    E.list encodeRoute routes
+
 
 encodeRoute : Route -> E.Value
 encodeRoute route =
     E.list encodeCoordinate route.route
 
+
 encodeCoordinate : Coordinate -> E.Value
 encodeCoordinate coord =
-    E.list E.float [coord.latitude, coord.longitude]
+    E.list E.float [ coord.latitude, coord.longitude ]
 
 
 routeDecoder : Decoder Route

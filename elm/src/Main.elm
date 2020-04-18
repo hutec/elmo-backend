@@ -46,7 +46,12 @@ type alias Model =
 
 init : () -> ( Model, Cmd Msg )
 init _ =
-    ( Model Loading Nothing Nothing, getRoutes )
+    ( Model Loading Nothing initRouteFilter, getRoutes )
+
+
+initRouteFilter : RouteFilter
+initRouteFilter =
+    RouteFilter ( Nothing, Nothing ) ( Nothing, Nothing )
 
 
 
@@ -56,7 +61,10 @@ init _ =
 type Msg
     = MorePlease
     | GotRoutes (Result Http.Error (List Route))
-    | UpdateFilter String
+    | UpdateFilterMinDistance String
+    | UpdateFilterMaxDistance String
+    | UpdateFilterMinSpeed String
+    | UpdateFilterMaxSpeed String
     | UpdateMap
 
 
@@ -74,13 +82,45 @@ update msg model =
                 Err errmsg ->
                     ( { model | status = Failure errmsg }, Cmd.none )
 
-        UpdateFilter newFilter ->
-            -- Update filter model filter and update
+        UpdateFilterMinDistance newVal ->
             let
-                new_model =
-                    { model | filter = String.toFloat newFilter }
+                old_filter =
+                    model.filter
+
+                new_filter =
+                    { old_filter | distance = ( String.toFloat newVal, Tuple.second old_filter.distance ) }
             in
-            ( new_model, Cmd.none )
+            ( { model | filter = new_filter }, Cmd.none )
+
+        UpdateFilterMaxDistance newVal ->
+            let
+                old_filter =
+                    model.filter
+
+                new_filter =
+                    { old_filter | distance = ( Tuple.first old_filter.distance, String.toFloat newVal ) }
+            in
+            ( { model | filter = new_filter }, Cmd.none )
+
+        UpdateFilterMinSpeed newVal ->
+            let
+                old_filter =
+                    model.filter
+
+                new_filter =
+                    { old_filter | speed = ( String.toFloat newVal, Tuple.second old_filter.speed ) }
+            in
+            ( { model | filter = new_filter }, Cmd.none )
+
+        UpdateFilterMaxSpeed newVal ->
+            let
+                old_filter =
+                    model.filter
+
+                new_filter =
+                    { old_filter | speed = ( Tuple.first old_filter.speed, String.toFloat newVal ) }
+            in
+            ( { model | filter = new_filter }, Cmd.none )
 
         UpdateMap ->
             ( model, cache (encodeRoutes (filteredRoutes model)) )
@@ -122,8 +162,7 @@ view model =
                 ]
             ]
         , div [ class "route-list" ]
-            [ input [ placeholder "Min Kilometers", onInput UpdateFilter ] []
-            , br [] []
+            [ viewFilterForm
             , button [ onClick UpdateMap ] [ text "Update Map" ]
             , nav []
                 [ h2 [] [ viewStravaStatus model ]
@@ -133,6 +172,18 @@ view model =
         , div [ class "route-detail" ]
             [ div [ id "mapid", style "height" "800px", style "width" "800px" ] []
             ]
+        ]
+
+
+viewFilterForm : Html Msg
+viewFilterForm =
+    div [ id "route-filter" ]
+        [ input [ placeholder "Min Distance", onInput UpdateFilterMinDistance ] []
+        , input [ placeholder "Max Distance", onInput UpdateFilterMaxDistance ] []
+        , br [] []
+        , input [ placeholder "Min Speed", onInput UpdateFilterMinSpeed ] []
+        , input [ placeholder "Max Speed", onInput UpdateFilterMaxSpeed ] []
+        , br [] []
         ]
 
 
