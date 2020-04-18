@@ -123,6 +123,7 @@ view model =
             ]
         , div [ class "route-list" ]
             [ input [ placeholder "Min Kilometers", onInput UpdateFilter ] []
+            , br [] []
             , button [ onClick UpdateMap ] [ text "Update Map" ]
             , nav []
                 [ h2 [] [ viewStravaStatus model ]
