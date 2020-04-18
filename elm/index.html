@@ -70,6 +70,7 @@
         });
        
         var mymap = L.map('mapid').setView([48.77, 9.17], 13);
+        var polylines = [];
 
         L.tileLayer('https://dev.{s}.tile.openstreetmap.fr/cyclosm/{z}/{x}/{y}.png', {
             maxZoom: 20,
@@ -77,9 +78,16 @@
         }).addTo(mymap);
 
         app.ports.cache.subscribe(function(data) {
+            // Clear all old routes
+            for (var i = 0; i < polylines.length; i++) {
+                mymap.removeLayer(polylines[i]);
+            }
+
+            // Add new routes
             for (var i = 0; i < data.length; i++) {
                 var polyline = L.polyline(data[i], {color: "red"}).addTo(mymap);
                 mymap.fitBounds(polyline.getBounds());
+                polylines.push(polyline);
             }
         });
     
