@@ -86,7 +86,9 @@
             // Add new routes
             for (var i = 0; i < data.length; i++) {
                 randomColor = '#'+(0x1000000+(Math.random())*0xffffff).toString(16).substr(1,6);
-                var polyline = L.polyline(data[i], {color: randomColor, weight: 5}).addTo(mymap);
+                var polyline = L.polyline(data[i]["route"], {color: randomColor, weight: 5});
+                polyline.bindPopup("<a href='" + data[i]["url"] + "''>Link to Strava</a>");
+                polyline.addTo(mymap);
                 polylines.push(polyline);
             }
             mymap.fitBounds(L.featureGroup(polylines).getBounds());

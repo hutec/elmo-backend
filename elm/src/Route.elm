@@ -71,7 +71,10 @@ encodeRoutes routes =
 
 encodeRoute : Route -> E.Value
 encodeRoute route =
-    E.list encodeCoordinate route.route
+    E.object
+        [ ( "route", E.list encodeCoordinate route.route )
+        , ( "url", E.string (routeToURL route) )
+        ]
 
 
 encodeCoordinate : Coordinate -> E.Value
