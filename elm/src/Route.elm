@@ -34,6 +34,9 @@ routeToURL : Route -> String
 routeToURL route =
     "https://www.strava.com/activities/" ++ route.id
 
+routeToGPXURL : Route -> String
+routeToGPXURL route = 
+    "https://www.strava.com/activities/" ++ route.id ++ "/export_gpx"
 
 compareMaybe : Maybe comparable -> comparable -> (comparable -> comparable -> Bool) -> Bool
 compareMaybe a b comp =
@@ -85,6 +88,7 @@ encodeRoute route =
     E.object
         [ ( "route", E.list encodeCoordinate route.route )
         , ( "url", E.string (routeToURL route) )
+        , ( "gpx", E.string (routeToGPXURL route) )
         ]
 
 

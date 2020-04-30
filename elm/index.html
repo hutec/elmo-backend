@@ -49,7 +49,7 @@
             for (var i = 0; i < data.length; i++) {
                 randomColor = '#'+(0x1000000+(Math.random())*0xffffff).toString(16).substr(1,6);
                 var polyline = L.polyline(data[i]["route"], {color: randomColor, weight: 5});
-                polyline.bindPopup("<a href='" + data[i]["url"] + "''>Link to Strava</a>");
+                polyline.bindPopup("<a href='" + data[i]["url"] + "''>Link to Strava</a></br><a href='" + data[i]["gpx"] + "''>Link to .gpx</a>");
                 polyline.addTo(mymap);
                 polylines.push(polyline);
             }
