@@ -3,6 +3,7 @@ module Route exposing (Coordinate, Route, RouteFilter, encodeRoutes, filterRoute
 import Json.Decode exposing (Decoder, field, float, index, string)
 import Json.Encode as E
 import Time exposing (Posix)
+import Date exposing (Date)
 
 
 type alias Coordinate =
@@ -25,6 +26,7 @@ type alias Route =
 type alias RouteFilter =
     { distance : ( Maybe Float, Maybe Float )
     , speed : ( Maybe Float, Maybe Float )
+    , date : ( Maybe Date, Maybe Date )
     }
 
 
