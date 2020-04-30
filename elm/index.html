@@ -5,60 +5,13 @@
     <link rel="stylesheet" href="https://unpkg.com/leaflet@1.6.0/dist/leaflet.css"
     integrity="sha512-xwE/Az9zrjBIphAcBb3F6JVqxf46+CDLwfLMHloNu6KEQCAWi6HcDUbeOfBIptF7tcCzusKFjFw2yuvEpDL9wQ=="
     crossorigin=""/>
+
+    <link rel="stylesheet" href="style.css"/>
+
     <!-- Make sure you put this AFTER Leaflet's CSS -->
     <script src="https://unpkg.com/leaflet@1.6.0/dist/leaflet.js"
     integrity="sha512-gZwIG9x3wUXg2hdXF6+rVkLF/0Vi9U8D2Ntg4Ga5I5BZpVkVxlJWbSQtXPSiUTtC0TjtGOmxa1AJPuV0CPthew=="
     crossorigin=""></script>
-
-    <style type="text/css">
-        body{
-            margin:40px auto;
-            max-width: 100%;
-            line-height:1.6;
-            font-size:18px;
-            color:#444;
-            padding:0 10px;
-            margin: 1em;
-            font-family: "Roboto", sans-serif;
-        }
-
-        body a {
-            color:#444;
-            text-decoration: none;
-        }
-
-        h1,h2,h3{
-            line-height:1.2
-        }
-
-        .content {
-            display: grid;
-            grid-template-columns: 1fr 2fr;
-            grid-template-rows: 3rem auto;
-            grid-template-areas: "header header" "route-list route-detail";
-        }    
-
-        .header {
-            grid-area: header;
-            display: flex;
-            justify-content: space-between;
-            align-items: center;
-        }
-
-        .header li {
-            display: inline;
-            margin-right: 1em;
-        }
-
-        .route-list {
-            grid-area: "route-list";
-        }
-
-        .route-detail {
-            grid-area: "route-detail";
-        }
-
-    </style>
     <title>Elmo</title>
 </head>
 <body>
