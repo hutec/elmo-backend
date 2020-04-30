@@ -1,9 +1,9 @@
 module Route exposing (Coordinate, Route, RouteFilter, encodeRoutes, filterRoute, routeListDecoder, routeToURL)
 
+import Date exposing (Date, fromPosix)
 import Json.Decode exposing (Decoder, field, float, index, string)
 import Json.Encode as E
-import Time exposing (Posix)
-import Date exposing (Date)
+import Time exposing (Posix, utc)
 
 
 type alias Coordinate =
@@ -57,9 +57,18 @@ isBetween range a =
     compareMaybe lower a (<) && compareMaybe upper a (>)
 
 
+isBetweenDate : ( Maybe Date, Maybe Date ) -> Posix -> Bool
+isBetweenDate ( lower, upper ) a =
+    let
+        d =
+            fromPosix utc a
+    in
+    Date.isBetween (Maybe.withDefault d lower) (Maybe.withDefault d upper) d
+
+
 filterRoute : RouteFilter -> Route -> Bool
 filterRoute filter route =
-    isBetween filter.distance route.distance && isBetween filter.speed route.speed
+    isBetween filter.distance route.distance && isBetween filter.speed route.speed && isBetweenDate filter.date route.date
 
 
 

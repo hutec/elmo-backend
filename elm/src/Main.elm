@@ -1,6 +1,8 @@
 port module Main exposing (..)
 
 import Browser
+import Date
+import DatePicker exposing (DateEvent(..), defaultSettings)
 import Debug exposing (toString)
 import Html exposing (..)
 import Html.Attributes exposing (class, href, id, placeholder, style)
@@ -8,7 +10,7 @@ import Html.Events exposing (onClick, onInput)
 import Http
 import Json.Encode as E
 import Route exposing (Route, RouteFilter, encodeRoutes, filterRoute, routeListDecoder, routeToURL)
-import Time
+import Time exposing (Month(..))
 
 
 
@@ -41,12 +43,21 @@ type alias Model =
     { status : StravaAPI
     , routes : Maybe (List Route)
     , filter : RouteFilter
+    , minDatePicker : DatePicker.DatePicker
+    , maxDatePicker : DatePicker.DatePicker
     }
 
 
 init : () -> ( Model, Cmd Msg )
 init _ =
-    ( Model Loading Nothing initRouteFilter, getRoutes )
+    let
+        minDatePicker =
+            DatePicker.initFromDate (Date.fromCalendarDate 2020 Mar 25)
+
+        maxDatePicker =
+            DatePicker.initFromDate (Date.fromCalendarDate 2020 Mar 25)
+    in
+    ( Model Loading Nothing initRouteFilter minDatePicker maxDatePicker, getRoutes )
 
 
 initRouteFilter : RouteFilter
@@ -65,12 +76,66 @@ type Msg
     | UpdateFilterMaxDistance String
     | UpdateFilterMinSpeed String
     | UpdateFilterMaxSpeed String
+    | UpdateFilterMinDate DatePicker.Msg
+    | UpdateFilterMaxDate DatePicker.Msg
     | UpdateMap
 
 
 update : Msg -> Model -> ( Model, Cmd Msg )
 update msg model =
     case msg of
+        UpdateFilterMinDate subMsg ->
+            let
+                ( newDatePicker, dateEvent ) =
+                    DatePicker.update defaultSettings subMsg model.minDatePicker
+
+                newDate =
+                    case dateEvent of
+                        Picked changedDate ->
+                            Just changedDate
+
+                        _ ->
+                            Tuple.first model.filter.date
+
+                old_filter =
+                    model.filter
+
+                new_filter =
+                    { old_filter | date = ( newDate, Tuple.second old_filter.date ) }
+            in
+            ( { model
+                | filter = new_filter
+                , minDatePicker = newDatePicker
+              }
+            , Cmd.none
+            )
+
+        UpdateFilterMaxDate subMsg ->
+            let
+                ( newDatePicker, dateEvent ) =
+                    DatePicker.update defaultSettings subMsg model.maxDatePicker
+
+                newDate =
+                    case dateEvent of
+                        Picked changedDate ->
+                            Just changedDate
+
+                        _ ->
+                            Tuple.second model.filter.date
+
+                old_filter =
+                    model.filter
+
+                new_filter =
+                    { old_filter | date = ( Tuple.first old_filter.date, newDate ) }
+            in
+            ( { model
+                | filter = new_filter
+                , maxDatePicker = newDatePicker
+              }
+            , Cmd.none
+            )
+
         MorePlease ->
             ( { model | status = Loading }, getRoutes )
 
@@ -162,7 +227,7 @@ view model =
                 ]
             ]
         , div [ class "route-list" ]
-            [ viewFilterForm
+            [ viewFilterForm model
             , button [ onClick UpdateMap ] [ text "Update Map" ]
             , nav []
                 [ h2 [] [ viewStravaStatus model ]
@@ -175,8 +240,8 @@ view model =
         ]
 
 
-viewFilterForm : Html Msg
-viewFilterForm =
+viewFilterForm : Model -> Html Msg
+viewFilterForm model =
     div [ id "route-filter" ]
         [ input [ placeholder "Min Distance", onInput UpdateFilterMinDistance ] []
         , input [ placeholder "Max Distance", onInput UpdateFilterMaxDistance ] []
@@ -184,6 +249,16 @@ viewFilterForm =
         , input [ placeholder "Min Speed", onInput UpdateFilterMinSpeed ] []
         , input [ placeholder "Max Speed", onInput UpdateFilterMaxSpeed ] []
         , br [] []
+        , DatePicker.view
+            (Tuple.first model.filter.date)
+            defaultSettings
+            model.minDatePicker
+            |> Html.map UpdateFilterMinDate
+        , DatePicker.view
+            (Tuple.second model.filter.date)
+            defaultSettings
+            model.maxDatePicker
+            |> Html.map UpdateFilterMaxDate
         ]
 
 
