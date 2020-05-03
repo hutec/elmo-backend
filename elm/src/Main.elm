@@ -247,7 +247,7 @@ view model =
                 ]
             ]
         , div [ class "route-detail" ]
-            [ div [ id "mapid", style "height" "800px", style "width" "100%" ] []
+            [ div [ id "mapid", style "height" "80vh", style "width" "100%" ] []
             ]
         ]
 
