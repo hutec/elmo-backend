@@ -2,15 +2,13 @@ port module Main exposing (..)
 
 import Browser
 import Date
-import DatePicker exposing (DateEvent(..), defaultSettings)
 import Debug exposing (toString)
 import Html exposing (..)
-import Html.Attributes exposing (class, href, id, placeholder, style)
+import Html.Attributes exposing (class, href, id, placeholder, style, type_)
 import Html.Events exposing (onClick, onInput)
 import Http
 import Json.Encode as E
 import Route exposing (Route, RouteFilter, encodeRoutes, filterRoute, routeListDecoder, routeToURL)
-import Task
 import Time exposing (Month(..))
 
 
@@ -44,21 +42,12 @@ type alias Model =
     { status : StravaAPI
     , routes : Maybe (List Route)
     , filter : RouteFilter
-    , minDatePicker : DatePicker.DatePicker
-    , maxDatePicker : DatePicker.DatePicker
     }
 
 
 init : () -> ( Model, Cmd Msg )
 init _ =
-    let
-        minDatePicker =
-            DatePicker.initFromDate (Date.fromCalendarDate 2020 Mar 25)
-
-        maxDatePicker =
-            DatePicker.initFromDate (Date.fromCalendarDate 2020 Mar 25)
-    in
-    ( Model Loading Nothing initRouteFilter minDatePicker maxDatePicker, getRoutes )
+    ( Model Loading Nothing initRouteFilter, getRoutes )
 
 
 initRouteFilter : RouteFilter
@@ -77,66 +66,43 @@ type Msg
     | UpdateFilterMaxDistance String
     | UpdateFilterMinSpeed String
     | UpdateFilterMaxSpeed String
-    | UpdateFilterMinDate DatePicker.Msg
-    | UpdateFilterMaxDate DatePicker.Msg
+    | UpdateFilterMinDate String
+    | UpdateFilterMaxDate String
     | UpdateMap
-    | ReceiveDate Date.Date
 
 
 update : Msg -> Model -> ( Model, Cmd Msg )
 update msg model =
     case msg of
-        UpdateFilterMinDate subMsg ->
+        UpdateFilterMinDate dateString ->
             let
-                ( newDatePicker, dateEvent ) =
-                    DatePicker.update defaultSettings subMsg model.minDatePicker
-
                 newDate =
-                    case dateEvent of
-                        Picked changedDate ->
-                            Just changedDate
+                    case Date.fromIsoString dateString of
+                        Ok date ->
+                            Just date
 
-                        _ ->
-                            Tuple.first model.filter.date
+                        Err _ ->
+                            Nothing
 
-                old_filter =
+                oldFilter =
                     model.filter
-
-                new_filter =
-                    { old_filter | date = ( newDate, Tuple.second old_filter.date ) }
             in
-            ( { model
-                | filter = new_filter
-                , minDatePicker = newDatePicker
-              }
-            , Cmd.none
-            )
+            ( { model | filter = { oldFilter | date = ( newDate, Tuple.second oldFilter.date ) } }, Cmd.none )
 
-        UpdateFilterMaxDate subMsg ->
+        UpdateFilterMaxDate dateString ->
             let
-                ( newDatePicker, dateEvent ) =
-                    DatePicker.update defaultSettings subMsg model.maxDatePicker
-
                 newDate =
-                    case dateEvent of
-                        Picked changedDate ->
-                            Just changedDate
+                    case Date.fromIsoString dateString of
+                        Ok date ->
+                            Just date
 
-                        _ ->
-                            Tuple.second model.filter.date
+                        Err _ ->
+                            Nothing
 
-                old_filter =
+                oldFilter =
                     model.filter
-
-                new_filter =
-                    { old_filter | date = ( Tuple.first old_filter.date, newDate ) }
             in
-            ( { model
-                | filter = new_filter
-                , maxDatePicker = newDatePicker
-              }
-            , Cmd.none
-            )
+            ( { model | filter = { oldFilter | date = ( Tuple.first oldFilter.date, newDate ) } }, Cmd.none )
 
         MorePlease ->
             ( { model | status = Loading }, getRoutes )
@@ -144,10 +110,10 @@ update msg model =
         GotRoutes result ->
             case result of
                 Ok routes ->
-                    ( { model | status = Success, routes = Just routes }, Date.today |> Task.perform ReceiveDate )
+                    ( { model | status = Success, routes = Just routes }, Cmd.none )
 
                 Err errmsg ->
-                    ( { model | status = Failure errmsg }, Date.today |> Task.perform ReceiveDate )
+                    ( { model | status = Failure errmsg }, Cmd.none )
 
         UpdateFilterMinDistance newVal ->
             let
@@ -191,16 +157,6 @@ update msg model =
 
         UpdateMap ->
             ( model, cache (encodeRoutes (filteredRoutes model)) )
-
-        ReceiveDate today ->
-            let
-                minDatePicker =
-                    DatePicker.initFromDate today
-
-                maxDatePicker =
-                    DatePicker.initFromDate today
-            in
-            ( { model | minDatePicker = minDatePicker, maxDatePicker = maxDatePicker }, Cmd.none )
 
 
 filteredRoutes : Model -> List Route
@@ -261,16 +217,8 @@ viewFilterForm model =
         , input [ placeholder "Min Speed", onInput UpdateFilterMinSpeed ] []
         , input [ placeholder "Max Speed", onInput UpdateFilterMaxSpeed ] []
         , br [] []
-        , DatePicker.view
-            (Tuple.first model.filter.date)
-            defaultSettings
-            model.minDatePicker
-            |> Html.map UpdateFilterMinDate
-        , DatePicker.view
-            (Tuple.second model.filter.date)
-            defaultSettings
-            model.maxDatePicker
-            |> Html.map UpdateFilterMaxDate
+        , input [ type_ "date", onInput UpdateFilterMinDate ] []
+        , input [ type_ "date", onInput UpdateFilterMaxDate ] []
         ]
 
 
