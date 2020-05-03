@@ -4,7 +4,7 @@ import Browser
 import Date
 import Debug exposing (toString)
 import Html exposing (..)
-import Html.Attributes exposing (class, href, id, placeholder, style, type_)
+import Html.Attributes exposing (checked, class, href, id, placeholder, style, type_)
 import Html.Events exposing (onClick, onInput)
 import Http
 import Json.Encode as E
@@ -42,12 +42,13 @@ type alias Model =
     { status : StravaAPI
     , routes : Maybe (List Route)
     , filter : RouteFilter
+    , autoupdate : Bool
     }
 
 
 init : () -> ( Model, Cmd Msg )
 init _ =
-    ( Model Loading Nothing initRouteFilter, getRoutes )
+    ( Model Loading Nothing initRouteFilter True, getRoutes )
 
 
 initRouteFilter : RouteFilter
@@ -68,6 +69,7 @@ type Msg
     | UpdateFilterMaxSpeed String
     | UpdateFilterMinDate String
     | UpdateFilterMaxDate String
+    | ToggleAutoUpdate
 
 
 update : Msg -> Model -> ( Model, Cmd Msg )
@@ -172,10 +174,21 @@ update msg model =
             in
             ( newModel, updateMap newModel )
 
+        ToggleAutoUpdate ->
+            let
+                newModel =
+                    { model | autoupdate = not model.autoupdate }
+            in
+            ( newModel, updateMap newModel )
+
 
 updateMap : Model -> Cmd msg
 updateMap model =
-    cache (encodeRoutes (filteredRoutes model))
+    if model.autoupdate then
+        cache (encodeRoutes (filteredRoutes model))
+
+    else
+        Cmd.none
 
 
 filteredRoutes : Model -> List Route
@@ -237,6 +250,12 @@ viewFilterForm model =
         , br [] []
         , input [ type_ "date", onInput UpdateFilterMinDate ] []
         , input [ type_ "date", onInput UpdateFilterMaxDate ] []
+        , br [] []
+        , label
+            [ style "margin-top" "20px" ]
+            [ input [ type_ "checkbox", onClick ToggleAutoUpdate, checked model.autoupdate ] []
+            , text "Auto-Update Map"
+            ]
         ]
 
 
