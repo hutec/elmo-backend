@@ -68,7 +68,6 @@ type Msg
     | UpdateFilterMaxSpeed String
     | UpdateFilterMinDate String
     | UpdateFilterMaxDate String
-    | UpdateMap
 
 
 update : Msg -> Model -> ( Model, Cmd Msg )
@@ -86,8 +85,11 @@ update msg model =
 
                 oldFilter =
                     model.filter
+
+                newModel =
+                    { model | filter = { oldFilter | date = ( newDate, Tuple.second oldFilter.date ) } }
             in
-            ( { model | filter = { oldFilter | date = ( newDate, Tuple.second oldFilter.date ) } }, Cmd.none )
+            ( newModel, updateMap newModel )
 
         UpdateFilterMaxDate dateString ->
             let
@@ -101,8 +103,11 @@ update msg model =
 
                 oldFilter =
                     model.filter
+
+                newModel =
+                    { model | filter = { oldFilter | date = ( Tuple.first oldFilter.date, newDate ) } }
             in
-            ( { model | filter = { oldFilter | date = ( Tuple.first oldFilter.date, newDate ) } }, Cmd.none )
+            ( newModel, updateMap newModel )
 
         MorePlease ->
             ( { model | status = Loading }, getRoutes )
@@ -122,8 +127,11 @@ update msg model =
 
                 new_filter =
                     { old_filter | distance = ( String.toFloat newVal, Tuple.second old_filter.distance ) }
+
+                newModel =
+                    { model | filter = new_filter }
             in
-            ( { model | filter = new_filter }, Cmd.none )
+            ( newModel, updateMap newModel )
 
         UpdateFilterMaxDistance newVal ->
             let
@@ -132,8 +140,11 @@ update msg model =
 
                 new_filter =
                     { old_filter | distance = ( Tuple.first old_filter.distance, String.toFloat newVal ) }
+
+                newModel =
+                    { model | filter = new_filter }
             in
-            ( { model | filter = new_filter }, Cmd.none )
+            ( newModel, updateMap newModel )
 
         UpdateFilterMinSpeed newVal ->
             let
@@ -142,8 +153,11 @@ update msg model =
 
                 new_filter =
                     { old_filter | speed = ( String.toFloat newVal, Tuple.second old_filter.speed ) }
+
+                newModel =
+                    { model | filter = new_filter }
             in
-            ( { model | filter = new_filter }, Cmd.none )
+            ( newModel, updateMap newModel )
 
         UpdateFilterMaxSpeed newVal ->
             let
@@ -152,11 +166,16 @@ update msg model =
 
                 new_filter =
                     { old_filter | speed = ( Tuple.first old_filter.speed, String.toFloat newVal ) }
-            in
-            ( { model | filter = new_filter }, Cmd.none )
 
-        UpdateMap ->
-            ( model, cache (encodeRoutes (filteredRoutes model)) )
+                newModel =
+                    { model | filter = new_filter }
+            in
+            ( newModel, updateMap newModel )
+
+
+updateMap : Model -> Cmd msg
+updateMap model =
+    cache (encodeRoutes (filteredRoutes model))
 
 
 filteredRoutes : Model -> List Route
@@ -196,7 +215,6 @@ view model =
             ]
         , div [ class "route-list" ]
             [ viewFilterForm model
-            , button [ onClick UpdateMap ] [ text "Update Map" ]
             , nav []
                 [ h2 [] [ viewStravaStatus model ]
                 , viewRoutes model
