@@ -184,8 +184,12 @@ update msg model =
 
 updateMap : Model -> Cmd msg
 updateMap model =
-    if model.autoupdate then
-        cache (encodeRoutes (filteredRoutes model))
+    let
+        routes =
+            filteredRoutes model
+    in
+    if model.autoupdate && not (List.isEmpty routes) then
+        cache (encodeRoutes routes)
 
     else
         Cmd.none
