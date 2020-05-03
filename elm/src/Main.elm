@@ -288,29 +288,20 @@ renderRouteList lst =
         (List.map
             (\l ->
                 li []
-                    [ a [ href (routeToURL l) ] [ text (toUtcString l.date ++ " - " ++ toString (truncate l.distance) ++ "km") ]
+                    [ a [ href (routeToURL l) ] [ text (toIsoString l.date ++ " - " ++ toString (truncate l.distance) ++ "km") ]
                     ]
             )
             lst
         )
 
 
-toUtcString : Time.Posix -> String
-toUtcString time =
-    padDay (String.fromInt (Time.toDay Time.utc time))
-        ++ ". "
-        ++ toString (Time.toMonth Time.utc time)
-        ++ " "
-        ++ String.fromInt (Time.toYear Time.utc time)
-
-
-padDay : String -> String
-padDay day =
-    if String.length day == 1 then
-        "0" ++ day
-
-    else
-        day
+toIsoString : Time.Posix -> String
+toIsoString time =
+    let
+        date =
+            Date.fromPosix Time.utc time
+    in
+    Date.toIsoString date
 
 
 
