@@ -37,7 +37,7 @@ def activity_to_dict(
         "average_speed": activity.average_speed * 3.6,
         "moving_time": activity.moving_time,
         "elevation": activity.total_elevation_gain,
-        "route": polyline.codec.PolylineCodec().decode(activity.map.summary_polyline)
+        "route": polyline.codec.PolylineCodec().decode(activity.map.summary_polyline),
     }
 
 
@@ -58,12 +58,18 @@ def refresh_user():
     strava_user.update(token_update)
     with open("strava_user.json", "w") as f:
         json.dump(strava_user, f)
-    return f"Refreshed {strava_user['athlete']['firstname']}"
+
+
+def check_and_refresh():
+    """Refreshes the user access token if it's expired"""
+    if time.time() > app.config["STRAVA_USER"]["expires_at"]:
+        refresh_user()
 
 
 @app.route("/routes")
 def home():
     """List the last routes."""
+    check_and_refresh()
     api = swagger_client.ActivitiesApi()
     api.api_client.configuration.access_token = app.config["STRAVA_USER"][
         "access_token"
