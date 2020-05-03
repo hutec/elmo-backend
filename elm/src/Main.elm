@@ -117,7 +117,11 @@ update msg model =
         GotRoutes result ->
             case result of
                 Ok routes ->
-                    ( { model | status = Success, routes = Just routes }, Cmd.none )
+                    let
+                        newModel =
+                            { model | status = Success, routes = Just routes }
+                    in
+                    ( newModel, updateMap newModel )
 
                 Err errmsg ->
                     ( { model | status = Failure errmsg }, Cmd.none )
