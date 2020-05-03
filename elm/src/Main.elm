@@ -10,6 +10,7 @@ import Html.Events exposing (onClick, onInput)
 import Http
 import Json.Encode as E
 import Route exposing (Route, RouteFilter, encodeRoutes, filterRoute, routeListDecoder, routeToURL)
+import Task
 import Time exposing (Month(..))
 
 
@@ -79,6 +80,7 @@ type Msg
     | UpdateFilterMinDate DatePicker.Msg
     | UpdateFilterMaxDate DatePicker.Msg
     | UpdateMap
+    | ReceiveDate Date.Date
 
 
 update : Msg -> Model -> ( Model, Cmd Msg )
@@ -142,10 +144,10 @@ update msg model =
         GotRoutes result ->
             case result of
                 Ok routes ->
-                    ( { model | status = Success, routes = Just routes }, Cmd.none )
+                    ( { model | status = Success, routes = Just routes }, Date.today |> Task.perform ReceiveDate )
 
                 Err errmsg ->
-                    ( { model | status = Failure errmsg }, Cmd.none )
+                    ( { model | status = Failure errmsg }, Date.today |> Task.perform ReceiveDate )
 
         UpdateFilterMinDistance newVal ->
             let
@@ -189,6 +191,16 @@ update msg model =
 
         UpdateMap ->
             ( model, cache (encodeRoutes (filteredRoutes model)) )
+
+        ReceiveDate today ->
+            let
+                minDatePicker =
+                    DatePicker.initFromDate today
+
+                maxDatePicker =
+                    DatePicker.initFromDate today
+            in
+            ( { model | minDatePicker = minDatePicker, maxDatePicker = maxDatePicker }, Cmd.none )
 
 
 filteredRoutes : Model -> List Route
