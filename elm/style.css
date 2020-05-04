@@ -18,6 +18,14 @@ h1, h2, h3 {
     line-height: 1.2
 }
 
+input:not([type="checkbox"]) {
+    border-right: none;
+    border-top: none;
+    border-left: none;
+    margin-right: 10px;
+    width: 100px;
+}
+
 .content {
     display: grid;
     grid-template-columns: 1fr 4fr;
