@@ -79,11 +79,19 @@ type Msg
     | UpdateFilterMinDate String
     | UpdateFilterMaxDate String
     | ToggleAutoUpdate
+    | UpdateActiveUser StravaUser
 
 
 update : Msg -> Model -> ( Model, Cmd Msg )
 update msg model =
     case msg of
+        UpdateActiveUser user ->
+            let
+                newModel =
+                    { model | active_user = Just user }
+            in
+            ( newModel, getRoutes newModel )
+
         UpdateFilterMinDate dateString ->
             let
                 newDate =
@@ -268,7 +276,13 @@ viewUserNavigation model =
                     []
 
                 Just users ->
-                    List.map (\l -> li [] [ text l.id ]) users
+                    List.map
+                        (\l ->
+                            li []
+                                [ a [ onClick (UpdateActiveUser l), href "#" ] [ text l.name ]
+                                ]
+                        )
+                        users
 
         listItems =
             List.concat
@@ -308,7 +322,12 @@ viewStravaStatus model =
             text (toString error)
 
         Loading ->
-            text "Loading..."
+            case model.active_user of
+                Nothing ->
+                    text "Please select user"
+
+                Just user ->
+                    text ("Loading routes of " ++ user.name)
 
         Success ->
             text "Routes"
