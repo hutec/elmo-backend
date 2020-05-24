@@ -21,19 +21,22 @@ RESPONSE_TYPE = "code"
 SCOPE = "read_all,activity:read_all,activity:read,profile:read_all"
 
 app = Flask(__name__)
-# Load users from users directory
-users = {}
-for file in os.listdir("users"):
-    with open(os.path.join("users", file), "r") as user_config_file:
-        user_config = json.load(user_config_file)
-        user_id = user_config["athlete"]["id"]
-        users[user_id] = user_config
-app.config["USERS"] = users
+
+def load_users():
+  """Load users from users directory."""
+  users = {}
+  for file in os.listdir("users"):
+      with open(os.path.join("users", file), "r") as user_config_file:
+          user_config = json.load(user_config_file)
+          user_id = user_config["athlete"]["id"]
+          users[user_id] = user_config
+  app.config["USERS"] = users
 
 
 @app.route("/users")
 def list_users():
     """List all users."""
+    load_users()
     users = list(map(user_to_dict, app.config["USERS"].values()))
     
     # user_names = [u["athlete"]["firstname"] for u in app.config["USERS"].values()]
@@ -89,3 +92,4 @@ def user_token_exchange():
 
 if __name__ == "__main__":
     app.run(debug=True)
+
