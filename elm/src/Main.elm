@@ -377,7 +377,7 @@ getRoutes model =
 
         Just user ->
             Http.get
-                { url = "http://localhost:5000/" ++ user.id ++ "/routes"
+                { url = "https://rbn.uber.space/strava/" ++ user.id ++ "/routes"
                 , expect = Http.expectJson GotRoutes routeListDecoder
                 }
 
@@ -385,6 +385,6 @@ getRoutes model =
 getUsers : Cmd Msg
 getUsers =
     Http.get
-        { url = "http://localhost:5000/users"
+        { url = "https://rbn.uber.space/strava/users"
         , expect = Http.expectJson GotUsers userListDecoder
         }
