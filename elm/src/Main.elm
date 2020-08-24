@@ -7,9 +7,11 @@ import Html exposing (..)
 import Html.Attributes exposing (checked, class, href, id, placeholder, style, type_)
 import Html.Events exposing (onClick, onInput)
 import Http
+import Json.Decode exposing (string)
 import Json.Encode as E
 import Route exposing (Route, RouteFilter, encodeRoutes, filterRoute, routeListDecoder, routeToURL)
 import Time exposing (Month(..))
+import User exposing (StravaUser, userListDecoder)
 
 
 
@@ -43,12 +45,18 @@ type alias Model =
     , routes : Maybe (List Route)
     , filter : RouteFilter
     , autoupdate : Bool
+    , users : Maybe (List StravaUser)
+    , active_user : Maybe StravaUser
     }
 
 
 init : () -> ( Model, Cmd Msg )
 init _ =
-    ( Model Loading Nothing initRouteFilter True, getRoutes )
+    let
+        model =
+            Model Loading Nothing initRouteFilter True Nothing Nothing
+    in
+    ( model, Cmd.batch [ getRoutes model, getUsers ] )
 
 
 initRouteFilter : RouteFilter
@@ -63,6 +71,7 @@ initRouteFilter =
 type Msg
     = MorePlease
     | GotRoutes (Result Http.Error (List Route))
+    | GotUsers (Result Http.Error (List StravaUser))
     | UpdateFilterMinDistance String
     | UpdateFilterMaxDistance String
     | UpdateFilterMinSpeed String
@@ -70,11 +79,19 @@ type Msg
     | UpdateFilterMinDate String
     | UpdateFilterMaxDate String
     | ToggleAutoUpdate
+    | UpdateActiveUser StravaUser
 
 
 update : Msg -> Model -> ( Model, Cmd Msg )
 update msg model =
     case msg of
+        UpdateActiveUser user ->
+            let
+                newModel =
+                    { model | active_user = Just user }
+            in
+            ( newModel, getRoutes newModel )
+
         UpdateFilterMinDate dateString ->
             let
                 newDate =
@@ -112,7 +129,7 @@ update msg model =
             ( newModel, updateMap newModel )
 
         MorePlease ->
-            ( { model | status = Loading }, getRoutes )
+            ( { model | status = Loading }, getRoutes model )
 
         GotRoutes result ->
             case result of
@@ -122,6 +139,14 @@ update msg model =
                             { model | status = Success, routes = Just routes }
                     in
                     ( newModel, updateMap newModel )
+
+                Err errmsg ->
+                    ( { model | status = Failure errmsg }, Cmd.none )
+
+        GotUsers result ->
+            case result of
+                Ok users ->
+                    ( { model | users = Just users }, Cmd.none )
 
                 Err errmsg ->
                     ( { model | status = Failure errmsg }, Cmd.none )
@@ -227,11 +252,7 @@ view model =
     div [ class "content" ]
         [ div [ class "header" ]
             [ h1 [] [ text "Strava" ]
-            , nav []
-                [ ul []
-                    [ li [] [ a [ href "https://rbn.uber.space/strava/start" ] [ text "Login" ] ]
-                    ]
-                ]
+            , viewUserNavigation model
             ]
         , div [ class "route-list" ]
             [ viewFilterForm model
@@ -243,6 +264,34 @@ view model =
         , div [ class "route-detail" ]
             [ div [ id "mapid", style "height" "80vh", style "width" "100%" ] []
             ]
+        ]
+
+
+viewUserNavigation : Model -> Html Msg
+viewUserNavigation model =
+    let
+        userListItems =
+            case model.users of
+                Nothing ->
+                    []
+
+                Just users ->
+                    List.map
+                        (\l ->
+                            li []
+                                [ a [ onClick (UpdateActiveUser l), href "#" ] [ text l.name ]
+                                ]
+                        )
+                        users
+
+        listItems =
+            List.concat
+                [ userListItems
+                , [ li [] [ a [ href "https://rbn.uber.space/strava/start" ] [ text "Login" ] ] ]
+                ]
+    in
+    nav []
+        [ ul [] listItems
         ]
 
 
@@ -273,7 +322,12 @@ viewStravaStatus model =
             text (toString error)
 
         Loading ->
-            text "Loading..."
+            case model.active_user of
+                Nothing ->
+                    text "Please select user"
+
+                Just user ->
+                    text ("Loading routes of " ++ user.name)
 
         Success ->
             text "Routes"
@@ -315,9 +369,22 @@ toIsoString time =
 -- HTTP
 
 
-getRoutes : Cmd Msg
-getRoutes =
+getRoutes : Model -> Cmd Msg
+getRoutes model =
+    case model.active_user of
+        Nothing ->
+            Cmd.none
+
+        Just user ->
+            Http.get
+                { url = "https://rbn.uber.space/strava/" ++ user.id ++ "/routes"
+                , expect = Http.expectJson GotRoutes routeListDecoder
+                }
+
+
+getUsers : Cmd Msg
+getUsers =
     Http.get
-        { url = "https://rbn.uber.space/strava/routes"
-        , expect = Http.expectJson GotRoutes routeListDecoder
+        { url = "https://rbn.uber.space/strava/users"
+        , expect = Http.expectJson GotUsers userListDecoder
         }
