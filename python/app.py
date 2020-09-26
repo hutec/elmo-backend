@@ -47,15 +47,26 @@ def list_users():
 
 @app.route("/<user_id>/routes")
 def list_routes(user_id):
-    """List the last routes."""
+    """List all routes of a user."""
     user_id = int(user_id)
     check_and_refresh(app, user_id)
     api = swagger_client.ActivitiesApi()
     api.api_client.configuration.access_token = app.config["USERS"][user_id][
         "access_token"
     ]
-    r = api.get_logged_in_athlete_activities(per_page=100)
-    response = jsonify(list(map(activity_to_dict, r)))
+    # Pagination: Load new route pages until exhausted
+    routes = []
+    page = 1
+    while True:
+      r = api.get_logged_in_athlete_activities(per_page=100, page=page)
+      new_routes = list(map(activity_to_dict, r))
+      if new_routes:
+        routes.extend(new_routes)
+        page += 1
+      else:
+        break
+
+    response = jsonify(routes)
     response.headers.add("Access-Control-Allow-Origin", "*")
     return response
 
