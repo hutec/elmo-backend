@@ -14,7 +14,12 @@ import Time exposing (Month(..))
 import User exposing (StravaUser, userListDecoder)
 
 
+backendURL =
+    "https://rbn.uber.space/strava/"
 
+
+
+-- backendURL = "http://localhost:5000/"
 -- MAIN
 
 
@@ -287,7 +292,7 @@ viewUserNavigation model =
         listItems =
             List.concat
                 [ userListItems
-                , [ li [] [ a [ href "https://rbn.uber.space/strava/start" ] [ text "Login" ] ] ]
+                , [ li [] [ a [ href (backendURL ++ "start") ] [ text "Login" ] ] ]
                 ]
     in
     nav []
@@ -377,7 +382,7 @@ getRoutes model =
 
         Just user ->
             Http.get
-                { url = "https://rbn.uber.space/strava/" ++ user.id ++ "/routes"
+                { url = backendURL ++ user.id ++ "/routes"
                 , expect = Http.expectJson GotRoutes routeListDecoder
                 }
 
@@ -385,6 +390,6 @@ getRoutes model =
 getUsers : Cmd Msg
 getUsers =
     Http.get
-        { url = "https://rbn.uber.space/strava/users"
+        { url = backendURL ++ "users"
         , expect = Http.expectJson GotUsers userListDecoder
         }
