@@ -15,8 +15,7 @@ from flask_sqlalchemy import SQLAlchemy
 import secrets
 import swagger_client
 from strava import activity_to_dict
-from strava import user_to_dict
-from strava import check_and_refresh
+from strava import refresh_user
 
 RESPONSE_TYPE = "code"
 SCOPE = "read_all,activity:read_all,activity:read,profile:read_all"
@@ -60,20 +59,6 @@ class User(db.Model):
 
     def __repr__(self):
         return f"User {self.firstname} {self.lastname}"
-
-
-def refresh_user(refresh_token) -> dict:
-    """Requests updated access credentials from the Strava API."""
-    r = requests.post(
-        "https://www.strava.com/api/v3/oauth/token",
-        data={
-            "client_id": secrets.STRAVA_CLIENT_ID,
-            "client_secret": secrets.STRAVA_CLIENT_SECRET,
-            "refresh_token": refresh_token,
-            "grant_type": "refresh_token",
-        },
-    )
-    return r.json()
 
 
 @app.route("/users")
