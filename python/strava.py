@@ -1,3 +1,5 @@
+"""This module handles Strava API specific classes and API-calls."""
+
 import time
 import requests
 import swagger_client
@@ -21,22 +23,9 @@ def activity_to_dict(
         "route": polyline.codec.PolylineCodec().decode(activity.map.summary_polyline),
     }
 
-def user_to_dict(user: dict) -> dict:
-    return {
-             "id": str(user["athlete"]["id"]),
-            "name": str(user["athlete"]["firstname"])
-        }
 
-
-def check_and_refresh(app, user_id):
-    """Refreshes the user access token if it's expired"""
-    if time.time() > app.config["USERS"][user_id]["expires_at"]:
-        refresh_user(app, user_id)
-
-
-def refresh_user(app, user_id):
-    print("refreshing user")
-    refresh_token = app.config["USERS"][user_id]["refresh_token"]
+def refresh_user(refresh_token) -> dict:
+    """Requests updated access credentials from the Strava API."""
     r = requests.post(
         "https://www.strava.com/api/v3/oauth/token",
         data={
@@ -46,8 +35,4 @@ def refresh_user(app, user_id):
             "grant_type": "refresh_token",
         },
     )
-    token_update = r.json()
-    del token_update["token_type"]
-    app.config["USERS"][user_id].update(token_update)
-    with open(f"users/{user_id}.json", "w") as f:
-        json.dump(app.config["USERS"][user_id], f)
+    return r.json()

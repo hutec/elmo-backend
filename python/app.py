@@ -14,32 +14,23 @@ import requests
 import secrets
 import swagger_client
 from strava import activity_to_dict
-from strava import user_to_dict
-from strava import check_and_refresh
+from strava import refresh_user
+from models import db, User
 
 RESPONSE_TYPE = "code"
 SCOPE = "read_all,activity:read_all,activity:read,profile:read_all"
 
 app = Flask(__name__)
-
-def load_users():
-  """Load users from users directory."""
-  users = {}
-  for file in os.listdir("users"):
-      with open(os.path.join("users", file), "r") as user_config_file:
-          user_config = json.load(user_config_file)
-          user_id = user_config["athlete"]["id"]
-          users[user_id] = user_config
-  app.config["USERS"] = users
+app.config["SQLALCHEMY_DATABASE_URI"] = "sqlite:///elmo.db"
+app.config["SQLALCHEMY_TRACK_MODIFICATIONS"] = False
+db = db.init_app(app)
 
 
 @app.route("/users")
 def list_users():
     """List all users."""
-    load_users()
-    users = list(map(user_to_dict, app.config["USERS"].values()))
-    
-    # user_names = [u["athlete"]["firstname"] for u in app.config["USERS"].values()]
+    users = User.query.all()
+    users = [{"id": str(u.id), "name": u.firstname} for u in users]
     response = jsonify(users)
     response.headers.add("Access-Control-Allow-Origin", "*")
     return response
@@ -49,22 +40,23 @@ def list_users():
 def list_routes(user_id):
     """List all routes of a user."""
     user_id = int(user_id)
-    check_and_refresh(app, user_id)
+    user = User.query.filter_by(id=user_id).first()
+    user.check_and_refresh()
+
     api = swagger_client.ActivitiesApi()
-    api.api_client.configuration.access_token = app.config["USERS"][user_id][
-        "access_token"
-    ]
+    api.api_client.configuration.access_token = user.access_token
+
     # Pagination: Load new route pages until exhausted
     routes = []
     page = 1
     while True:
-      r = api.get_logged_in_athlete_activities(per_page=100, page=page)
-      new_routes = list(map(activity_to_dict, r))
-      if new_routes:
-        routes.extend(new_routes)
-        page += 1
-      else:
-        break
+        r = api.get_logged_in_athlete_activities(per_page=100, page=page)
+        new_routes = list(map(activity_to_dict, r))
+        if new_routes:
+            routes.extend(new_routes)
+            page += 1
+        else:
+            break
 
     response = jsonify(routes)
     response.headers.add("Access-Control-Allow-Origin", "*")
@@ -93,14 +85,12 @@ def user_token_exchange():
             "grant_type": "authorization_code",
         },
     )
-    user_config = r.json()
-    user_id = user_config["athlete"]["id"]
-    with open(os.path.join("users", f"{user_id}.json"), "w") as user_file:
-        json.dump(user_config, user_file)
-    app.config["USERS"][user_id].update(user_config)
-    return f"Welcome {user_config['athlete']['firstname']}"
+    user = User.from_json(r.json())
+    db.session.add(user)
+    db.session.commit()
+
+    return f"Welcome {user}"
 
 
 if __name__ == "__main__":
     app.run(debug=True)
-
