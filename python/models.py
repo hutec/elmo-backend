@@ -4,6 +4,8 @@
 import time
 
 from flask_sqlalchemy import SQLAlchemy
+import swagger_client
+
 
 from strava import refresh_user
 
@@ -43,3 +45,57 @@ class User(db.Model):
 
     def __repr__(self):
         return f"User {self.firstname} {self.lastname}"
+
+
+class Route(db.Model):
+    id = db.Column(db.Integer, primary_key=True)
+    user_id = db.Column(db.Integer, db.ForeignKey("user.id"))
+    start_date = db.Column(db.DateTime)
+    name = db.Column(db.String)
+    elapsed_time = db.Column(db.Integer)
+    moving_time = db.Column(db.Integer)
+    distance = db.Column(db.Float)
+    average_speed = db.Column(db.Float)
+    route = db.Column(db.String)
+
+    @classmethod
+    def from_summary_activity(cls, activity):
+        """Construct route from dict."""
+        return cls(
+            id=activity.id,
+            user_id=activity.athlete.id,
+            start_date=activity.start_date,
+            name=activity.name,
+            elapsed_time=activity.elapsed_time,
+            moving_time=activity.moving_time,
+            distance=activity.distance / 1000.0,
+            average_speed=activity.average_speed * 3.6,
+            route=activity.map.summary_polyline,
+        )
+
+    def __repr__(self):
+        return f"Route {self.name}"
+
+
+def get_and_store_routes(user: User):
+    """Retrieves all (summary) activities from the Strava-API and stores them in the DB."""
+
+    # TODO: find better place for this function
+
+    user.check_and_refresh()
+
+    api = swagger_client.ActivitiesApi()
+    api.api_client.configuration.access_token = user.access_token
+
+    # Pagination: Load new route pages until exhausted
+    page = 1
+    while True:
+        r = api.get_logged_in_athlete_activities(per_page=100, page=page)
+        routes = list(map(Route.from_summary_activity, r))
+        if routes:
+            db.session.add_all(routes)
+            page += 1
+        else:
+            break
+
+    db.session.commit()
