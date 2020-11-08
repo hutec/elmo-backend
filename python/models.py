@@ -106,7 +106,18 @@ def get_and_store_routes(user: User):
     page = 1
     while True:
         r = api.get_logged_in_athlete_activities(per_page=100, page=page)
+        # Filter bike-rides
+        r = filter(lambda a: a.type == "Ride", r)
         routes = list(map(Route.from_summary_activity, r))
+        
+
+        # Overwrite with detailed route
+        import tqdm
+
+        for route in tqdm.tqdm(routes):
+            detailed_route = api.get_activity_by_id(route.id)
+            route.route = detailed_route.map.polyline
+
         if routes:
             db.session.add_all(routes)
             page += 1
