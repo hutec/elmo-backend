@@ -46,7 +46,9 @@ def list_users():
 def list_routes(user_id):
     """List all routes of a user."""
     user_id = int(user_id)
-    routes = Route.query.filter_by(user_id=user_id).all()
+    routes = (
+        Route.query.filter_by(user_id=user_id).order_by(Route.start_date.desc()).all()
+    )
     routes = list(map(lambda r: r.to_json(), routes))
     response = jsonify(routes)
     response.headers.add("Access-Control-Allow-Origin", "*")
