@@ -5,6 +5,7 @@ import time
 
 from flask_sqlalchemy import SQLAlchemy
 import swagger_client
+import polyline
 
 
 from strava import refresh_user
@@ -57,7 +58,7 @@ class Route(db.Model):
     distance = db.Column(db.Float)
     average_speed = db.Column(db.Float)
     route = db.Column(db.String)
-    total_elevation_gain = db.Column(db.Float)
+    elevation = db.Column(db.Float)
 
     @classmethod
     def from_summary_activity(cls, activity):
@@ -72,8 +73,20 @@ class Route(db.Model):
             distance=activity.distance / 1000.0,
             average_speed=activity.average_speed * 3.6,
             route=activity.map.summary_polyline,
-            total_elevation_gain=activity.total_elevation_gain
+            elevation=activity.total_elevation_gain,
         )
+
+    def to_json(self):
+        return {
+            "id": str(self.id),
+            "distance": self.distance,
+            # In milliseconds
+            "start_date": self.start_date.timestamp() * 1000,
+            "average_speed": self.average_speed,
+            "moving_time": self.moving_time,
+            "elevation": self.elevation,
+            "route": polyline.codec.PolylineCodec().decode(self.route),
+        }
 
     def __repr__(self):
         return f"Route {self.name}"
