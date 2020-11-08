@@ -57,6 +57,7 @@ class Route(db.Model):
     distance = db.Column(db.Float)
     average_speed = db.Column(db.Float)
     route = db.Column(db.String)
+    total_elevation_gain = db.Column(db.Float)
 
     @classmethod
     def from_summary_activity(cls, activity):
@@ -71,6 +72,7 @@ class Route(db.Model):
             distance=activity.distance / 1000.0,
             average_speed=activity.average_speed * 3.6,
             route=activity.map.summary_polyline,
+            total_elevation_gain=activity.total_elevation_gain
         )
 
     def __repr__(self):
