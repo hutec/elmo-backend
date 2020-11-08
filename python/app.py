@@ -46,24 +46,8 @@ def list_users():
 def list_routes(user_id):
     """List all routes of a user."""
     user_id = int(user_id)
-    user = User.query.filter_by(id=user_id).first()
-    user.check_and_refresh()
-
-    api = swagger_client.ActivitiesApi()
-    api.api_client.configuration.access_token = user.access_token
-
-    # Pagination: Load new route pages until exhausted
-    routes = []
-    page = 1
-    while True:
-        r = api.get_logged_in_athlete_activities(per_page=100, page=page)
-        new_routes = list(map(activity_to_dict, r))
-        if new_routes:
-            routes.extend(new_routes)
-            page += 1
-        else:
-            break
-
+    routes = Route.query.filter_by(user_id=user_id).all()
+    routes = list(map(lambda r: r.to_json(), routes))
     response = jsonify(routes)
     response.headers.add("Access-Control-Allow-Origin", "*")
     return response
