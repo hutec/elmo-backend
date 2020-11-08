@@ -109,12 +109,9 @@ def get_and_store_routes(user: User):
         # Filter bike-rides
         r = filter(lambda a: a.type == "Ride", r)
         routes = list(map(Route.from_summary_activity, r))
-        
 
         # Overwrite with detailed route
-        import tqdm
-
-        for route in tqdm.tqdm(routes):
+        for route in routes:
             detailed_route = api.get_activity_by_id(route.id)
             route.route = detailed_route.map.polyline
 
