@@ -1,7 +1,7 @@
 # Elmo
 
-This is playground for me learning [elm](https://elm-lang.org/), web developement, and data visualization.
-Data is consumed from the [Strava](https://www.strava.com/) API.
+This is a playground for learning [elm](https://elm-lang.org/), web developement, and data visualization.
+Data is consumed from the [Strava](https://www.strava.com/) API and displayed with [Leaflet](https://leafletjs.com/reference-1.7.1.html)
 
 # Installation
 
