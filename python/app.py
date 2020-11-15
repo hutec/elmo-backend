@@ -11,6 +11,10 @@ from flask import jsonify
 from flask import json
 import requests
 
+import numpy as np
+import matplotlib.pyplot as plt
+import matplotlib as mpl
+
 import secrets
 import swagger_client
 from strava import activity_to_dict
@@ -51,6 +55,42 @@ def list_routes(user_id):
     )
     routes = list(map(lambda r: r.to_json(), routes))
     response = jsonify(routes)
+    response.headers.add("Access-Control-Allow-Origin", "*")
+    return response
+
+
+@app.route("/<user_id>/heatmap")
+def heatmap(user_id):
+    user_id = int(user_id)
+    routes = Route.query.filter_by(user_id=user_id).all()
+    routes = list(map(lambda r: r.to_json(), routes))
+    lat_range = [48.5184, 49.01625]
+    lon_range = [8.3647, 9.65698]
+    all_coords = []
+    for r in routes:
+        all_coords.extend(r["route"])
+
+    all_coords = np.array(all_coords)
+
+    res = np.histogram2d(
+        all_coords[:, 0], all_coords[:, 1], range=[lat_range, lon_range], bins=80
+    )
+
+    heat = res[0].T
+
+    heat = (heat != 0) * 0.5
+
+    # heat = np.log(heat)
+    # heat[np.isneginf(heat)] = 0
+    # heat = heat/heat.max()
+
+    upper = np.meshgrid(res[1][:-1], res[2][:-1])
+    lower = np.meshgrid(res[1][1:], res[2][1:])
+
+    mesh = np.stack([*lower, *upper, heat], axis=-1)
+    mesh = mesh.reshape(-1, 5)
+
+    response = jsonify(mesh.tolist())
     response.headers.add("Access-Control-Allow-Origin", "*")
     return response
 
