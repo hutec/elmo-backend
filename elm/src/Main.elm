@@ -12,16 +12,18 @@ import Json.Decode exposing (string)
 import Json.Encode as E
 import Route exposing (Route, RouteFilter, encodeRoutes, filterRoute, routeListDecoder, routeToURL)
 import Time exposing (Month(..))
+import Url.Builder as URLBuilder
 import User exposing (StravaUser, userListDecoder)
 
 
 
+-- exposing (crossOrigin, string)
 --backendURL =
 --    "https://rbn.uber.space/strava/"
 
 
 backendURL =
-    "http://localhost:5000/"
+    "http://localhost:5000"
 
 
 
@@ -318,7 +320,7 @@ viewUserNavigation model =
         listItems =
             List.concat
                 [ userListItems
-                , [ li [] [ a [ href (backendURL ++ "start") ] [ text "Login" ] ] ]
+                , [ li [] [ a [ href (URLBuilder.crossOrigin backendURL [ "start" ] []) ] [ text "Login" ] ] ]
                 ]
     in
     nav []
@@ -408,7 +410,7 @@ getRoutes model =
 
         Just user ->
             Http.get
-                { url = backendURL ++ user.id ++ "/routes"
+                { url = URLBuilder.crossOrigin backendURL [ user.id, "routes" ] []
                 , expect = Http.expectJson GotRoutes routeListDecoder
                 }
 
@@ -416,7 +418,7 @@ getRoutes model =
 getUsers : Cmd Msg
 getUsers =
     Http.get
-        { url = backendURL ++ "users"
+        { url = URLBuilder.crossOrigin backendURL [ "users" ] []
         , expect = Http.expectJson GotUsers userListDecoder
         }
 
@@ -428,7 +430,18 @@ getHeatmap model =
             Cmd.none
 
         Just user ->
+            let
+                url =
+                    URLBuilder.crossOrigin
+                        backendURL
+                        [ user.id, "heatmap" ]
+                        [ URLBuilder.string "minlat" "48.5184"
+                        , URLBuilder.string "maxlat" "49.01625"
+                        , URLBuilder.string "minlon" "8.3647"
+                        , URLBuilder.string "maxlon" "9.65698"
+                        ]
+            in
             Http.get
-                { url = backendURL ++ user.id ++ "/heatmap"
+                { url = url
                 , expect = Http.expectJson GotHeatmap heatmapDecoder
                 }
