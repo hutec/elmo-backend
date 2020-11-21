@@ -64,8 +64,14 @@ def heatmap(user_id):
     user_id = int(user_id)
     routes = Route.query.filter_by(user_id=user_id).all()
     routes = list(map(lambda r: r.to_json(), routes))
-    lat_range = [48.5184, 49.01625]
-    lon_range = [8.3647, 9.65698]
+
+    min_lat = request.args.get("minlat", type=float)
+    max_lat = request.args.get("maxlat", type=float)
+    min_lon = request.args.get("minlon", type=float)
+    max_lon = request.args.get("maxlon", type=float)
+    lat_range = [min_lat, max_lat]
+    lon_range = [min_lon, max_lon]
+
     all_coords = []
     for r in routes:
         all_coords.extend(r["route"])
