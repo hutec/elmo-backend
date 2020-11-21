@@ -3,6 +3,7 @@ port module Main exposing (..)
 import Browser
 import Date
 import Debug exposing (toString)
+import Heatmap exposing (HeatmapCell, heatmapDecoder, heatmapEncoder)
 import Html exposing (..)
 import Html.Attributes exposing (checked, class, href, id, placeholder, style, type_)
 import Html.Events exposing (onClick, onInput)
@@ -14,12 +15,16 @@ import Time exposing (Month(..))
 import User exposing (StravaUser, userListDecoder)
 
 
+
+--backendURL =
+--    "https://rbn.uber.space/strava/"
+
+
 backendURL =
-    "https://rbn.uber.space/strava/"
+    "http://localhost:5000/"
 
 
 
--- backendURL = "http://localhost:5000/"
 -- MAIN
 
 
@@ -32,7 +37,10 @@ main =
         }
 
 
-port cache : E.Value -> Cmd msg
+port sendRoutes : E.Value -> Cmd msg
+
+
+port sendHeatmap : E.Value -> Cmd msg
 
 
 
@@ -77,6 +85,7 @@ type Msg
     = MorePlease
     | GotRoutes (Result Http.Error (List Route))
     | GotUsers (Result Http.Error (List StravaUser))
+    | GotHeatmap (Result Http.Error (List HeatmapCell))
     | UpdateFilterMinDistance String
     | UpdateFilterMaxDistance String
     | UpdateFilterMinSpeed String
@@ -95,7 +104,7 @@ update msg model =
                 newModel =
                     { model | active_user = Just user }
             in
-            ( newModel, getRoutes newModel )
+            ( newModel, getHeatmap newModel )
 
         UpdateFilterMinDate dateString ->
             let
@@ -152,6 +161,14 @@ update msg model =
             case result of
                 Ok users ->
                     ( { model | users = Just users }, Cmd.none )
+
+                Err errmsg ->
+                    ( { model | status = Failure errmsg }, Cmd.none )
+
+        GotHeatmap result ->
+            case result of
+                Ok hm ->
+                    ( model, updateHeatmap hm )
 
                 Err errmsg ->
                     ( { model | status = Failure errmsg }, Cmd.none )
@@ -223,7 +240,16 @@ updateMap model =
             filteredRoutes model
     in
     if model.autoupdate && not (List.isEmpty routes) then
-        cache (encodeRoutes routes)
+        sendRoutes (encodeRoutes routes)
+
+    else
+        Cmd.none
+
+
+updateHeatmap : List HeatmapCell -> Cmd msg
+updateHeatmap cells =
+    if not (List.isEmpty cells) then
+        sendHeatmap (heatmapEncoder cells)
 
     else
         Cmd.none
@@ -393,3 +419,16 @@ getUsers =
         { url = backendURL ++ "users"
         , expect = Http.expectJson GotUsers userListDecoder
         }
+
+
+getHeatmap : Model -> Cmd Msg
+getHeatmap model =
+    case model.active_user of
+        Nothing ->
+            Cmd.none
+
+        Just user ->
+            Http.get
+                { url = backendURL ++ user.id ++ "/heatmap"
+                , expect = Http.expectJson GotHeatmap heatmapDecoder
+                }

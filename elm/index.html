@@ -39,7 +39,14 @@
 
         var polylines = [];
 
-        app.ports.cache.subscribe(function(data) {
+        app.ports.sendHeatmap.subscribe(function(data) {
+            for (var i = 0; i < data.length; i++) {
+                var bounds = [[data[i][0], data[i][1]], [data[i][2], data[i][3]]];
+                var rect = L.rectangle(bounds, {color: "#ff7800", weight: 0, fillOpacity: data[i][4]}).addTo(mymap);
+            }
+        });
+
+        app.ports.sendRoutes.subscribe(function(data) {
             // Clear all old routes
             for (var i = 0; i < polylines.length; i++) {
                 mymap.removeLayer(polylines[i]);
@@ -55,6 +62,8 @@
             }
             mymap.fitBounds(L.featureGroup(polylines).getBounds());
         });
+
+       
     
 
     </script>
