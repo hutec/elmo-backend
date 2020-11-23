@@ -37,14 +37,22 @@
         };
         L.control.layers(baseLayers).addTo(mymap);
 
-        var polylines = [];
+        var heatmapCells = []
 
         app.ports.sendHeatmap.subscribe(function(data) {
+            for (var i = 0; i < heatmapCells.length; i++) {
+                mymap.removeLayer(heatmapCells[i]);
+            }
+
             for (var i = 0; i < data.length; i++) {
                 var bounds = [[data[i][0], data[i][1]], [data[i][2], data[i][3]]];
-                var rect = L.rectangle(bounds, {color: "#ff7800", weight: 0, fillOpacity: data[i][4]}).addTo(mymap);
+                var cell = L.rectangle(bounds, {color: "#ff7800", weight: 0, fillOpacity: data[i][4]});
+                cell.addTo(mymap);
+                heatmapCells.push(cell);
             }
         });
+
+        var polylines = [];
 
         app.ports.sendRoutes.subscribe(function(data) {
             // Clear all old routes
@@ -63,6 +71,16 @@
             mymap.fitBounds(L.featureGroup(polylines).getBounds());
         });
 
+        app.ports.requestMapBounds.subscribe(function(data) {
+            var bounds = mymap.getBounds();
+            var ret = [
+                bounds.getSouth(),
+                bounds.getNorth(),
+                bounds.getWest(),
+                bounds.getEast(),
+            ];
+            app.ports.receiveMapBounds.send(ret);
+        })
        
     
 
