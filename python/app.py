@@ -79,7 +79,7 @@ def heatmap(user_id):
     all_coords = np.array(all_coords)
 
     res = np.histogram2d(
-        all_coords[:, 0], all_coords[:, 1], range=[lat_range, lon_range], bins=80
+        all_coords[:, 0], all_coords[:, 1], range=[lat_range, lon_range], bins=50
     )
 
     heat = res[0].T
