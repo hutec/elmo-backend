@@ -3,7 +3,7 @@ port module Main exposing (..)
 import Browser
 import Date
 import Debug exposing (toString)
-import Heatmap exposing (HeatmapCell, heatmapDecoder, heatmapEncoder)
+import Heatmap exposing (Bounds, HeatmapCell, boundsDecoder, heatmapDecoder, heatmapEncoder)
 import Html exposing (..)
 import Html.Attributes exposing (checked, class, href, id, placeholder, style, type_)
 import Html.Events exposing (onClick, onInput)
@@ -11,6 +11,7 @@ import Http
 import Json.Decode exposing (string)
 import Json.Encode as E
 import Route exposing (Route, RouteFilter, encodeRoutes, filterRoute, routeListDecoder, routeToURL)
+import String exposing (fromFloat)
 import Time exposing (Month(..))
 import Url.Builder as URLBuilder
 import User exposing (StravaUser, userListDecoder)
@@ -43,6 +44,12 @@ port sendRoutes : E.Value -> Cmd msg
 
 
 port sendHeatmap : E.Value -> Cmd msg
+
+
+port requestMapBounds : () -> Cmd msg
+
+
+port receiveMapBounds : (Json.Decode.Value -> msg) -> Sub msg
 
 
 
@@ -96,6 +103,8 @@ type Msg
     | UpdateFilterMaxDate String
     | ToggleAutoUpdate
     | UpdateActiveUser StravaUser
+    | RequestMapBounds -- send message for getting bounds
+    | ReceivedMapBounds (Result Json.Decode.Error Bounds)
 
 
 update : Msg -> Model -> ( Model, Cmd Msg )
@@ -106,7 +115,7 @@ update msg model =
                 newModel =
                     { model | active_user = Just user }
             in
-            ( newModel, getHeatmap newModel )
+            ( newModel, Cmd.none )
 
         UpdateFilterMinDate dateString ->
             let
@@ -234,6 +243,17 @@ update msg model =
             in
             ( newModel, updateMap newModel )
 
+        RequestMapBounds ->
+            ( model, requestMapBounds () )
+
+        ReceivedMapBounds result ->
+            case result of
+                Ok bounds ->
+                    ( model, getHeatmap model bounds )
+
+                Err errmsg ->
+                    ( { model | status = Loading }, Cmd.none )
+
 
 updateMap : Model -> Cmd msg
 updateMap model =
@@ -273,7 +293,7 @@ filteredRoutes model =
 
 subscriptions : Model -> Sub Msg
 subscriptions model =
-    Sub.none
+    receiveMapBounds (boundsDecoder >> ReceivedMapBounds)
 
 
 
@@ -296,6 +316,7 @@ view model =
             ]
         , div [ class "route-detail" ]
             [ div [ id "mapid", style "height" "80vh", style "width" "100%" ] []
+            , button [ onClick RequestMapBounds ] [ text "Get Bounds!" ]
             ]
         ]
 
@@ -423,8 +444,9 @@ getUsers =
         }
 
 
-getHeatmap : Model -> Cmd Msg
-getHeatmap model =
+getHeatmap : Model -> Bounds -> Cmd Msg
+getHeatmap model bounds =
+    -- Get  Bounds from current map
     case model.active_user of
         Nothing ->
             Cmd.none
@@ -435,10 +457,10 @@ getHeatmap model =
                     URLBuilder.crossOrigin
                         backendURL
                         [ user.id, "heatmap" ]
-                        [ URLBuilder.string "minlat" "48.5184"
-                        , URLBuilder.string "maxlat" "49.01625"
-                        , URLBuilder.string "minlon" "8.3647"
-                        , URLBuilder.string "maxlon" "9.65698"
+                        [ URLBuilder.string "minlat" (fromFloat bounds.minLatitude)
+                        , URLBuilder.string "maxlat" (fromFloat bounds.maxLatitude)
+                        , URLBuilder.string "minlon" (fromFloat bounds.minLongitude)
+                        , URLBuilder.string "maxlon" (fromFloat bounds.maxLongitude)
                         ]
             in
             Http.get
