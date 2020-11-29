@@ -46,9 +46,9 @@ input:not([type="checkbox"]) {
 }
 
 .route-list {
-    grid-area: "route-list";
+    grid-area: route-list;
 }
 
 .route-detail {
-    grid-area: "route-detail";
+    grid-area: route-detail;
 }
