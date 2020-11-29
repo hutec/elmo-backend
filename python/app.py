@@ -46,6 +46,10 @@ def list_users():
 def list_routes(user_id):
     """List all routes of a user."""
     user_id = int(user_id)
+    user = User.query.filter_by(id = user_id).first()
+    # Get new routes if available
+    get_and_store_routes(user)
+
     routes = (
         Route.query.filter_by(user_id=user_id).order_by(Route.start_date.desc()).all()
     )
