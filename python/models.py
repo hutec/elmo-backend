@@ -96,24 +96,27 @@ def get_and_store_routes(user: User):
     """Retrieves all (summary) activities from the Strava-API and stores them in the DB."""
 
     # TODO: find better place for this function
+    # TODO: Handle API exhaustion
 
     user.check_and_refresh()
 
     api = swagger_client.ActivitiesApi()
     api.api_client.configuration.access_token = user.access_token
+    existing_route_ids = [r.id for r in db.session.query(Route).all()]
 
     # Pagination: Load new route pages until exhausted
     page = 1
     while True:
         r = api.get_logged_in_athlete_activities(per_page=100, page=page)
-        # Filter bike-rides
-        r = filter(lambda a: a.type == "Ride", r)
-        routes = list(map(Route.from_summary_activity, r))
-
-        # Overwrite with detailed route
-        for route in routes:
-            detailed_route = api.get_activity_by_id(route.id)
-            route.route = detailed_route.map.polyline
+        # Filter bike-rides and new routes
+        routes = []
+        for route in r:
+            if route.type == "Ride" and route.id not in existing_route_ids:
+                route = Route.from_summary_activity(route)
+                # Get detailed route and overwrite the summary polyline
+                detailed_route = api.get_activity_by_id(route.id)
+                route.route = detailed_route.map.polyline
+                routes.append(route)
 
         if routes:
             db.session.add_all(routes)
