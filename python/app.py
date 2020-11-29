@@ -15,15 +15,21 @@ import secrets
 import swagger_client
 from strava import activity_to_dict
 from strava import refresh_user
-from models import db, User
+from models import db, User, Route, get_and_store_routes
 
 RESPONSE_TYPE = "code"
 SCOPE = "read_all,activity:read_all,activity:read,profile:read_all"
 
-app = Flask(__name__)
-app.config["SQLALCHEMY_DATABASE_URI"] = "sqlite:///elmo.db"
-app.config["SQLALCHEMY_TRACK_MODIFICATIONS"] = False
-db = db.init_app(app)
+
+def create_app():
+    app = Flask(__name__)
+    app.config["SQLALCHEMY_DATABASE_URI"] = "sqlite:///elmo.db"
+    app.config["SQLALCHEMY_TRACK_MODIFICATIONS"] = False
+    db.init_app(app)
+    return app
+
+
+app = create_app()
 
 
 @app.route("/users")
@@ -40,24 +46,14 @@ def list_users():
 def list_routes(user_id):
     """List all routes of a user."""
     user_id = int(user_id)
-    user = User.query.filter_by(id=user_id).first()
-    user.check_and_refresh()
+    user = User.query.filter_by(id = user_id).first()
+    # Get new routes if available
+    get_and_store_routes(user)
 
-    api = swagger_client.ActivitiesApi()
-    api.api_client.configuration.access_token = user.access_token
-
-    # Pagination: Load new route pages until exhausted
-    routes = []
-    page = 1
-    while True:
-        r = api.get_logged_in_athlete_activities(per_page=100, page=page)
-        new_routes = list(map(activity_to_dict, r))
-        if new_routes:
-            routes.extend(new_routes)
-            page += 1
-        else:
-            break
-
+    routes = (
+        Route.query.filter_by(user_id=user_id).order_by(Route.start_date.desc()).all()
+    )
+    routes = list(map(lambda r: r.to_json(), routes))
     response = jsonify(routes)
     response.headers.add("Access-Control-Allow-Origin", "*")
     return response
@@ -88,6 +84,7 @@ def user_token_exchange():
     user = User.from_json(r.json())
     db.session.add(user)
     db.session.commit()
+    get_and_store_routes(user)
 
     return f"Welcome {user}"
 
