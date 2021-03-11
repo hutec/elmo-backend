@@ -8,6 +8,12 @@ Install the requirements via
 poetry install
 ```
 
+## Create empty database
+
+```bash
+poetry run python scripts/init_db.py
+```
+
 ## Set Strava Secrets
 
 - Copy `secrets.py.example` to `secrets.py`
