@@ -16,12 +16,6 @@ Data is consumed from the [Strava](https://www.strava.com/) API and displayed wi
 - Create a Strava App
 - Enter `STRAVA_CLIENT_ID` AND `STRAVA_CLIENT_SECRET`
 
-## Install elm and transpile Elm App
-
-- [Download and install elm](https://github.com/elm/compiler/blob/master/installers/linux/README.md)
-- in the `elm` folder run `elm make src/Main.elm -o elm.js`
-
-
 # Helpful Links
 
 [StackOverflow Discussion](https://stackoverflow.com/questions/55657275/swagger-client-in-python-trying-to-use-strava-api)
@@ -29,6 +23,5 @@ Data is consumed from the [Strava](https://www.strava.com/) API and displayed wi
 https://yizeng.me/2017/01/11/get-a-strava-api-access-token-with-write-permission/
 https://www.ryanbaumann.com/blog/2015/4/6/strava-api-cycling-data-for-visualization
 https://www.patricksteinert.de/wordpress/2017/11/29/analyzing-strava-training
-
 
 https://elmprogramming.com/building-a-simple-page-in-elm.html
