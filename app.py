@@ -13,9 +13,10 @@ import requests
 
 import secrets
 import swagger_client
-from strava import activity_to_dict
-from strava import refresh_user
-from models import db, User, Route, get_and_store_routes
+
+from elmo.strava import activity_to_dict
+from elmo.strava import refresh_user
+from elmo.models import db, User, Route, get_and_store_routes
 
 RESPONSE_TYPE = "code"
 SCOPE = "read_all,activity:read_all,activity:read,profile:read_all"

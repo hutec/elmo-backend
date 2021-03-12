@@ -8,7 +8,7 @@ import swagger_client
 import polyline
 
 
-from strava import refresh_user
+from elmo.strava import refresh_user
 
 db = SQLAlchemy()
 
