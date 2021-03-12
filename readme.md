@@ -2,7 +2,7 @@
 
 # Installation
 
-Install the requirements via
+[Install `poetry`](https://python-poetry.org/docs/#installation). Install the requirements via
 
 ```bash
 poetry install
