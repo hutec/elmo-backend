@@ -6,8 +6,6 @@ import swagger_client
 import polyline
 import json
 
-import secrets
-
 
 def activity_to_dict(
     activity: swagger_client.models.summary_activity.SummaryActivity,
@@ -24,13 +22,13 @@ def activity_to_dict(
     }
 
 
-def refresh_user(refresh_token) -> dict:
+def refresh_user(refresh_token, client_id, client_secret) -> dict:
     """Requests updated access credentials from the Strava API."""
     r = requests.post(
         "https://www.strava.com/api/v3/oauth/token",
         data={
-            "client_id": secrets.STRAVA_CLIENT_ID,
-            "client_secret": secrets.STRAVA_CLIENT_SECRET,
+            "client_id": client_id,
+            "client_secret": client_secret,
             "refresh_token": refresh_token,
             "grant_type": "refresh_token",
         },

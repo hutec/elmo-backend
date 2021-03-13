@@ -34,10 +34,10 @@ class User(db.Model):
             access_token=args["access_token"],
         )
 
-    def check_and_refresh(self):
+    def check_and_refresh(self, strava_client_id, strava_client_secret):
         """Refreshes the user access token if it's expired"""
         if time.time() > self.expires_at:
-            r = refresh_user(self.refresh_token)
+            r = refresh_user(self.refresh_token, strava_client_id, strava_client_secret)
             self.access_token = r["access_token"]
             self.refresh_token = r["refresh_token"]
             self.expires_at = r["expires_at"]
@@ -92,13 +92,13 @@ class Route(db.Model):
         return f"Route {self.name}"
 
 
-def get_and_store_routes(user: User):
+def get_and_store_routes(user: User, strava_client_id, strava_client_secret):
     """Retrieves all (summary) activities from the Strava-API and stores them in the DB."""
 
     # TODO: find better place for this function
     # TODO: Handle API exhaustion
 
-    user.check_and_refresh()
+    user.check_and_refresh(strava_client_id, strava_client_secret)
 
     api = swagger_client.ActivitiesApi()
     api.api_client.configuration.access_token = user.access_token

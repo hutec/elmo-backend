@@ -11,11 +11,8 @@ from flask import jsonify
 from flask import json
 import requests
 
-import secrets
 import swagger_client
 
-from elmo.strava import activity_to_dict
-from elmo.strava import refresh_user
 from elmo.models import db, User, Route, get_and_store_routes
 
 RESPONSE_TYPE = "code"
@@ -31,6 +28,7 @@ def create_app():
 
 
 app = create_app()
+app.config.from_pyfile("secrets.py")
 
 
 @app.route("/users")
@@ -49,7 +47,9 @@ def list_routes(user_id):
     user_id = int(user_id)
     user = User.query.filter_by(id=user_id).first()
     # Get new routes if available
-    get_and_store_routes(user)
+    get_and_store_routes(
+        user, app.config["STRAVA_CLIENT_ID"], app.config["STRAVA_CLIENT_SECRET"]
+    )
 
     routes = (
         Route.query.filter_by(user_id=user_id).order_by(Route.start_date.desc()).all()
@@ -63,7 +63,9 @@ def list_routes(user_id):
 @app.route("/start")
 def authenticate():
     """Starts the authentication process."""
-    url = f"https://www.strava.com/oauth/authorize?client_id={secrets.STRAVA_CLIENT_ID}&response_type=code&redirect_uri={secrets.REDIRECT_URI}&scope={SCOPE}"
+    client_id = app.config["STRAVA_CLIENT_ID"]
+    redirect_uri = app.config["REDIRECT_URI"]
+    url = f"https://www.strava.com/oauth/authorize?client_id={client_id}&response_type=code&redirect_uri={redirect_uri}&scope={SCOPE}"
     return redirect(url)
 
 
@@ -76,8 +78,8 @@ def user_token_exchange():
     r = requests.post(
         "https://www.strava.com/api/v3/oauth/token",
         data={
-            "client_id": secrets.STRAVA_CLIENT_ID,
-            "client_secret": secrets.STRAVA_CLIENT_SECRET,
+            "client_id": app.config["STRAVA_CLIENT_ID"],
+            "client_secret": app.config["STRAVA_CLIENT_SECRET"],
             "code": user_code,
             "grant_type": "authorization_code",
         },
@@ -85,7 +87,9 @@ def user_token_exchange():
     user = User.from_json(r.json())
     db.session.add(user)
     db.session.commit()
-    get_and_store_routes(user)
+    get_and_store_routes(
+        user, app.config["STRAVA_CLIENT_ID"], app.config["STRAVA_CLIENT_SECRET"]
+    )
 
     return f"Welcome {user}"
 
