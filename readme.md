@@ -17,4 +17,4 @@ poetry run python scripts/init_db.py
 ## Set Strava Secrets
 
 - Copy `secrets.py.example` to `secrets.py`
-- Replace with the values from the Strava Developer page
+- Replace with the values from the [Strava API page](https://www.strava.com/settings/api)
