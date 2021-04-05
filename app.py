@@ -43,7 +43,11 @@ def list_users():
 
 @app.route("/<user_id>/routes")
 def list_routes(user_id):
-    """List all routes of a user."""
+    """List all routes of a user.
+
+    Additionally, an argument "filter" containing a route id to filter
+    can be passed.
+    """
     user_id = int(user_id)
     user = User.query.filter_by(id=user_id).first()
     # Get new routes if available
@@ -51,8 +55,12 @@ def list_routes(user_id):
         user, app.config["STRAVA_CLIENT_ID"], app.config["STRAVA_CLIENT_SECRET"]
     )
 
+    filter_kwargs = {"user_id": user_id}
+    if request.args.get("filter"):
+        filter_kwargs["id"] = request.args.get("filter")
+
     routes = (
-        Route.query.filter_by(user_id=user_id).order_by(Route.start_date.desc()).all()
+        Route.query.filter_by(**filter_kwargs).order_by(Route.start_date.desc()).all()
     )
     routes = list(map(lambda r: r.to_json(), routes))
     response = jsonify(routes)
