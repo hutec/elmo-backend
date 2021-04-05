@@ -9,6 +9,7 @@ from flask import Flask
 from flask import redirect
 from flask import jsonify
 from flask import json
+from flask_executor import Executor
 import requests
 
 import swagger_client
@@ -21,14 +22,18 @@ SCOPE = "read_all,activity:read_all,activity:read,profile:read_all"
 
 def create_app():
     app = Flask(__name__)
-    app.config["SQLALCHEMY_DATABASE_URI"] = "sqlite:///elmo.db"
+    app.config["SQLALCHEMY_DATABASE_URI"] = "sqlite:///elmo.db?check_same_thread=False"
     app.config["SQLALCHEMY_TRACK_MODIFICATIONS"] = False
+    app.config["EXECUTOR_PROPAGATE_EXCEPTIONS"] = True
+
     db.init_app(app)
     return app
 
 
 app = create_app()
 app.config.from_pyfile("secrets.py")
+
+executor = Executor(app)
 
 
 @app.route("/users")
@@ -95,11 +100,15 @@ def user_token_exchange():
     user = User.from_json(r.json())
     db.session.add(user)
     db.session.commit()
-    get_and_store_routes(
-        user, app.config["STRAVA_CLIENT_ID"], app.config["STRAVA_CLIENT_SECRET"]
+
+    executor.submit(
+        get_and_store_routes,
+        user,
+        app.config["STRAVA_CLIENT_ID"],
+        app.config["STRAVA_CLIENT_SECRET"],
     )
 
-    return f"Welcome {user}"
+    return "Routes are now syncing in the background. This will take some time."
 
 
 if __name__ == "__main__":
