@@ -1,18 +1,11 @@
 """This module contains the Flask App."""
 
-import time
-import json
-import os
-
 from flask import request
 from flask import Flask
 from flask import redirect
 from flask import jsonify
-from flask import json
 from flask_executor import Executor
 import requests
-
-import swagger_client
 
 from elmo.models import db, User, Route, get_and_store_routes
 
@@ -86,7 +79,6 @@ def authenticate():
 def user_token_exchange():
     """Receive the user code and query Strava to get the final access token."""
     user_code = request.args.get("code")
-    scopes = request.args.get("scope")
 
     r = requests.post(
         "https://www.strava.com/api/v3/oauth/token",
