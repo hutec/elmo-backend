@@ -39,6 +39,42 @@ def list_users():
     return response
 
 
+@app.route("/<user_id>/geojson")
+def get_geojson(user_id):
+    """Get routes as geojson file."""
+    user_id = int(user_id)
+    user = User.query.filter_by(id=user_id).first()
+    if user is None:
+        return "User not found", 404
+
+    # Get new routes if available
+    get_and_store_routes(
+        user, app.config["STRAVA_CLIENT_ID"], app.config["STRAVA_CLIENT_SECRET"]
+    )
+    filter_kwargs = {"user_id": user_id}
+    routes = (
+        Route.query.filter_by(**filter_kwargs).order_by(Route.start_date.desc()).all()
+    )
+
+    features = []
+    for route in routes:
+        route = route.to_json()
+        features.append(
+            {
+                "type": "Feature",
+                "geometry": {
+                    "type": "LineString",
+                    "coordinates": list(map(lambda x: [x[1], x[0]], route["route"])),
+                },
+                "properties": {},
+            }
+        )
+    out = {"type": "FeatureCollection", "features": features}
+    response = jsonify(out)
+    response.headers.add("Access-Control-Allow-Origin", "*")
+    return response
+
+
 @app.route("/<user_id>/routes")
 def list_routes(user_id):
     """List all routes of a user.
