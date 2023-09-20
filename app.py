@@ -66,7 +66,9 @@ def get_geojson(user_id):
                     "type": "LineString",
                     "coordinates": list(map(lambda x: [x[1], x[0]], route["route"])),
                 },
-                "properties": {},
+                "properties": {
+                    "id": route["id"],
+                },
             }
         )
     out = {"type": "FeatureCollection", "features": features}
