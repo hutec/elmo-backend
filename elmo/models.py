@@ -85,7 +85,7 @@ class Route(db.Model):
             "average_speed": self.average_speed,
             "moving_time": self.moving_time,
             "elevation": self.elevation,
-            "route": polyline.codec.PolylineCodec().decode(self.route),
+            "route": polyline.decode(self.route),
         }
 
     def __repr__(self):
