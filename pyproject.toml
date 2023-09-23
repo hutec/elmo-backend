@@ -5,16 +5,16 @@ description = "Python Strava API Wrapper"
 authors = ["Robin Hutmacher <robin.hutmacher@gmail.com>"]
 
 [tool.poetry.dependencies]
-python = "^3.7"
-Flask = "^1.1.2"
-requests = "^2.25.1"
+python = "^3.9"
+Flask = "^2.3.3"
+requests = "^2.31.0"
 gunicorn = "^20.0.4"
-polyline = "^1.4.0"
-SQLAlchemy = "^1.3.23"
-Flask-SQLAlchemy = "^2.4.4"
+polyline = "^2.0.0"
+SQLAlchemy = "^2.0.21"
+Flask-SQLAlchemy = "^3.1.1"
 strava-api-v3 = {url = "https://github.com/hutec/strava-api/releases/download/v1.0.0/strava_api_v3-1.0.0-py3-none-any.whl"}
-Flask-Executor = "^0.9.4"
-black = "^21.12b0"
+Flask-Executor = "^1.0.0"
+black = "^23.9.1"
 
 [tool.poetry.dev-dependencies]
 
