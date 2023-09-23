@@ -140,3 +140,4 @@ cython_debug/
 secrets.py
 elmo.db
 .vscode
+application.cfg

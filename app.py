@@ -24,7 +24,7 @@ def create_app():
 
 
 app = create_app()
-app.config.from_pyfile("secrets.py")
+app.config.from_pyfile("application.cfg")
 
 executor = Executor(app)
 
