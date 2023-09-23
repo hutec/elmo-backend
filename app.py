@@ -73,6 +73,7 @@ def get_geojson(user_id):
                 },
                 "properties": {
                     "id": route["id"],
+                    "start_date": route["start_date"] / 1000,  # ms to seconds
                 },
             }
         )
