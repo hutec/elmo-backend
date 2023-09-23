@@ -1,4 +1,5 @@
 """This module contains the Flask App."""
+import os
 
 from flask import request
 from flask import Flask
@@ -15,7 +16,11 @@ SCOPE = "read_all,activity:read_all,activity:read,profile:read_all"
 
 def create_app():
     app = Flask(__name__)
-    app.config["SQLALCHEMY_DATABASE_URI"] = "sqlite:///elmo.db?check_same_thread=False"
+    basedir = os.path.abspath(os.path.dirname(__file__))
+    database_path = os.path.join(basedir, "elmo.db")
+    app.config[
+        "SQLALCHEMY_DATABASE_URI"
+    ] = f"sqlite:///{database_path}?check_same_thread=False"
     app.config["SQLALCHEMY_TRACK_MODIFICATIONS"] = False
     app.config["EXECUTOR_PROPAGATE_EXCEPTIONS"] = True
 
