@@ -141,3 +141,6 @@ secrets.py
 elmo.db
 .vscode
 application.cfg
+
+# Mac stuff
+.DS_STORE
