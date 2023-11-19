@@ -14,6 +14,7 @@ SQLAlchemy = "^2.0.21"
 Flask-SQLAlchemy = "^3.1.1"
 strava-api-v3 = {url = "https://github.com/hutec/strava-api/releases/download/v1.0.0/strava_api_v3-1.0.0-py3-none-any.whl"}
 Flask-Executor = "^1.0.0"
+alembic = "^1.12.1"
 
 [tool.poetry.dev-dependencies]
 
