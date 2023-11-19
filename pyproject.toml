@@ -14,9 +14,25 @@ SQLAlchemy = "^2.0.21"
 Flask-SQLAlchemy = "^3.1.1"
 strava-api-v3 = {url = "https://github.com/hutec/strava-api/releases/download/v1.0.0/strava_api_v3-1.0.0-py3-none-any.whl"}
 Flask-Executor = "^1.0.0"
-black = "^23.9.1"
 
 [tool.poetry.dev-dependencies]
+
+[tool.poetry.group.dev.dependencies]
+ruff = "^0.1.6"
+
+[tool.ruff]
+select = ["E", "F", "I001", "B"]
+
+ignore = ["E501", "D107", "D203", "D212", "D213", "D402", "D413", "D415", "D416", "D417"]
+
+line-length = 88
+
+# Assume Python 3.10.
+target-version = "py310"
+
+[tool.ruff.mccabe]
+# Unlike Flake8, default to a complexity level of 10.
+max-complexity = 10
 
 [build-system]
 requires = ["poetry-core>=1.0.0"]
