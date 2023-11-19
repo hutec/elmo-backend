@@ -1,8 +1,8 @@
 """This module handles Strava API specific classes and API-calls."""
 
+import polyline
 import requests
 import swagger_client
-import polyline
 
 
 def activity_to_dict(

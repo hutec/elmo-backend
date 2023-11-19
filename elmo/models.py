@@ -3,10 +3,9 @@
 
 import time
 
-from flask_sqlalchemy import SQLAlchemy
-import swagger_client
 import polyline
-
+import swagger_client
+from flask_sqlalchemy import SQLAlchemy
 
 from elmo.strava import refresh_user
 

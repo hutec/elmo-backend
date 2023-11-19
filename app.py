@@ -1,14 +1,11 @@
 """This module contains the Flask App."""
 import os
 
-from flask import request
-from flask import Flask
-from flask import redirect
-from flask import jsonify
-from flask_executor import Executor
 import requests
+from flask import Flask, jsonify, redirect, request
+from flask_executor import Executor
 
-from elmo.models import db, User, Route, get_and_store_routes
+from elmo.models import Route, User, db, get_and_store_routes
 
 RESPONSE_TYPE = "code"
 SCOPE = "read_all,activity:read_all,activity:read,profile:read_all"
