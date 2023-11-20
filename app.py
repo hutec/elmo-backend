@@ -107,6 +107,22 @@ def list_routes(user_id):
     return response
 
 
+@app.route("/<user_id>/route_bounds")
+def route_bounds(user_id):
+    """Return the bounds of all routes of a user."""
+    user_id = int(user_id)
+    keys = ["id", "bounds", "start_date"]
+    routes = (
+        Route.query.filter_by(user_id=user_id)
+        .with_entities(Route.id, Route.bounds, Route.start_date)
+        .all()
+    )
+    routes = [dict(zip(keys, r)) for r in routes]
+    response = jsonify(routes)
+    response.headers.add("Access-Control-Allow-Origin", "*")
+    return response
+
+
 @app.route("/start")
 def authenticate():
     """Starts the authentication process."""
