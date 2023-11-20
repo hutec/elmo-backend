@@ -1,8 +1,28 @@
 """This module handles Strava API specific classes and API-calls."""
 
+from typing import Sequence
+
 import polyline
 import requests
 import swagger_client
+
+
+def compute_bounds(route: Sequence[Sequence[float]]) -> Sequence[float]:
+    """Compute the bounds of a route.
+
+    Args:
+        route: A list of lat/lon pairs.
+
+    Returns:
+        A string representing the bounds of the route.
+    """
+    lats = [lat for lat, _ in route]
+    lons = [lon for _, lon in route]
+
+    if lats == [] or lons == []:
+        return ""
+
+    return f"{min(lats)},{min(lons)},{max(lats)},{max(lons)}"
 
 
 def activity_to_dict(

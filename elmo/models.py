@@ -7,7 +7,7 @@ import polyline
 import swagger_client
 from flask_sqlalchemy import SQLAlchemy
 
-from elmo.strava import refresh_user
+from elmo.strava import compute_bounds, refresh_user
 
 db = SQLAlchemy()
 
@@ -58,10 +58,13 @@ class Route(db.Model):
     average_speed = db.Column(db.Float)
     route = db.Column(db.String)
     elevation = db.Column(db.Float)
+    bounds = db.Column(db.String)
 
     @classmethod
     def from_summary_activity(cls, activity):
         """Construct route from dict."""
+        bounds = compute_bounds(polyline.decode(activity.map.summary_polyline))
+
         return cls(
             id=activity.id,
             user_id=activity.athlete.id,
@@ -73,6 +76,7 @@ class Route(db.Model):
             average_speed=activity.average_speed * 3.6,
             route=activity.map.summary_polyline,
             elevation=activity.total_elevation_gain,
+            bounds=bounds,
         )
 
     def to_json(self):
@@ -85,6 +89,7 @@ class Route(db.Model):
             "moving_time": self.moving_time,
             "elevation": self.elevation,
             "route": polyline.decode(self.route),
+            "bounds": self.bounds,
         }
 
     def __repr__(self):
