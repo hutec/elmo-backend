@@ -107,17 +107,16 @@ def list_routes(user_id):
     return response
 
 
-@app.route("/<user_id>/route_bounds")
+@app.route("/<user_id>/route_details")
 def route_bounds(user_id):
     """Return the bounds of all routes of a user."""
     user_id = int(user_id)
-    keys = ["id", "bounds", "start_date"]
-    routes = (
-        Route.query.filter_by(user_id=user_id)
-        .with_entities(Route.id, Route.bounds, Route.start_date)
-        .all()
-    )
-    routes = [dict(zip(keys, r)) for r in routes]
+    column_names = [
+        column.name for column in Route.__table__.columns if column.name != "route"
+    ]
+    entities = [getattr(Route, column_name) for column_name in column_names]
+    routes = Route.query.filter_by(user_id=user_id).with_entities(*entities).all()
+    routes = [dict(zip(column_names, r)) for r in routes]
     response = jsonify(routes)
     response.headers.add("Access-Control-Allow-Origin", "*")
     return response
