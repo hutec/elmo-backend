@@ -7,7 +7,7 @@ import requests
 import swagger_client
 
 
-def compute_bounds(route: Sequence[Sequence[float]]) -> Sequence[float]:
+def compute_bounds(route: Sequence[Sequence[float]]) -> str:
     """Compute the bounds of a route.
 
     Args:
