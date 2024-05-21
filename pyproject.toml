@@ -7,7 +7,7 @@ authors = ["Robin Hutmacher <robin.hutmacher@gmail.com>"]
 [tool.poetry.dependencies]
 python = "^3.9"
 Flask = "^2.3.3"
-requests = "^2.31.0"
+requests = "^2.32.0"
 gunicorn = "^22.0.0"
 polyline = "^2.0.0"
 SQLAlchemy = "^2.0.21"
