@@ -1,6 +1,5 @@
 """This module defines the ORM DB models."""
 
-
 import time
 
 import polyline

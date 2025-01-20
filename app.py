@@ -1,4 +1,5 @@
 """This module contains the Flask App."""
+
 import os
 
 import requests
